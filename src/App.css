@@ -15,13 +15,34 @@ body {
   gap: 20px;
 }
 
+.header-panel {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.settings-button {
+  background-color: #6c757d;
+}
+
+.settings-button:hover {
+  background-color: #5a6268;
+}
+
 .settings-panel {
   display: flex;
-  gap: 20px;
+  flex-direction: column;
+  gap: 15px;
   background-color: white;
   padding: 15px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.settings-panel h3 {
+  margin-top: 0;
+  margin-bottom: 0;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
 }
 
 .input-group {

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { invoke, convertFileSrc } from "@tauri-apps/api/core";
+import { useState, useEffect } from "react";
+import { invoke } from "@tauri-apps/api/core";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import "./App.css";
 
@@ -9,6 +9,25 @@ interface EvidencePair {
   right_image: string | null;
 }
 
+const ImagePreview = ({ path }: { path: string | null }) => {
+  const [dataUrl, setDataUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!path) return;
+    invoke<string>("read_file_base64", { path })
+      .then((url) => setDataUrl(url))
+      .catch((err) => console.error("Failed to load image", err));
+  }, [path]);
+
+  if (!dataUrl) return <span className="icon-ok">○</span>;
+  return (
+    <div className="status-cell">
+      <span className="icon-ok">○</span>
+      <img src={dataUrl} alt="Preview" className="thumbnail" />
+    </div>
+  );
+};
+
 interface ScanResult {
   pairs: EvidencePair[];
   errors: string[];
@@ -17,10 +36,14 @@ interface ScanResult {
 function App() {
   const [leftToken, setLeftToken] = useState("before");
   const [rightToken, setRightToken] = useState("after");
+  const [leftHeader, setLeftHeader] = useState("左画像");
+  const [rightHeader, setRightHeader] = useState("右画像");
+
   const [folderPath, setFolderPath] = useState<string | null>(null);
   const [pairs, setPairs] = useState<EvidencePair[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [isExporting, setIsExporting] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const handleSelectFolder = async () => {
     try {
@@ -74,8 +97,8 @@ function App() {
         await invoke("generate_excel", {
           savePath,
           pairs,
-          leftToken,
-          rightToken,
+          leftHeader,
+          rightHeader,
         });
         alert("Excelの出力が完了しました");
       }
@@ -89,30 +112,59 @@ function App() {
 
   return (
     <div className="container">
-      <div className="settings-panel">
-        <div className="input-group">
-          <label>左画像識別子</label>
-          <input
-            type="text"
-            value={leftToken}
-            onChange={(e) => {
-              setLeftToken(e.target.value);
-              if (folderPath) scanDirectory(folderPath);
-            }}
-          />
-        </div>
-        <div className="input-group">
-          <label>右画像識別子</label>
-          <input
-            type="text"
-            value={rightToken}
-            onChange={(e) => {
-              setRightToken(e.target.value);
-              if (folderPath) scanDirectory(folderPath);
-            }}
-          />
-        </div>
+      <div className="header-panel">
+        <button className="settings-button" onClick={() => setShowSettings(!showSettings)}>
+          {showSettings ? "設定を閉じる" : "設定を開く"}
+        </button>
       </div>
+
+      {showSettings && (
+        <div className="settings-panel">
+          <h3>設定</h3>
+          <div className="input-group">
+            <label>左画像識別子</label>
+            <input
+              type="text"
+              value={leftToken}
+              onChange={(e) => {
+                setLeftToken(e.target.value);
+              }}
+              onBlur={() => {
+                if (folderPath) scanDirectory(folderPath);
+              }}
+            />
+          </div>
+          <div className="input-group">
+            <label>右画像識別子</label>
+            <input
+              type="text"
+              value={rightToken}
+              onChange={(e) => {
+                setRightToken(e.target.value);
+              }}
+              onBlur={() => {
+                if (folderPath) scanDirectory(folderPath);
+              }}
+            />
+          </div>
+          <div className="input-group">
+            <label>左画像エクセル文言</label>
+            <input
+              type="text"
+              value={leftHeader}
+              onChange={(e) => setLeftHeader(e.target.value)}
+            />
+          </div>
+          <div className="input-group">
+            <label>右画像エクセル文言</label>
+            <input
+              type="text"
+              value={rightHeader}
+              onChange={(e) => setRightHeader(e.target.value)}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="action-panel">
         <button onClick={handleSelectFolder}>フォルダ選択</button>
@@ -145,20 +197,14 @@ function App() {
                 <td>{pair.key}</td>
                 <td className="center-text">
                   {pair.left_image ? (
-                     <div className="status-cell">
-                        <span className="icon-ok">○</span>
-                        <img src={convertFileSrc(pair.left_image)} alt="Left" className="thumbnail" />
-                     </div>
+                     <ImagePreview path={pair.left_image} />
                   ) : (
                     <span className="icon-ng">×</span>
                   )}
                 </td>
                 <td className="center-text">
                   {pair.right_image ? (
-                    <div className="status-cell">
-                        <span className="icon-ok">○</span>
-                        <img src={convertFileSrc(pair.right_image)} alt="Right" className="thumbnail" />
-                    </div>
+                     <ImagePreview path={pair.right_image} />
                   ) : (
                     <span className="icon-ng">×</span>
                   )}

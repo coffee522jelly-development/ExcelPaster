@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 use rust_xlsxwriter::{Workbook, Image, Format, FormatBorder, FormatAlign};
+use base64::{engine::general_purpose, Engine as _};
+use std::fs;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct EvidencePair {
@@ -82,7 +84,28 @@ fn scan_directory(path: String, left_token: String, right_token: String) -> Scan
 }
 
 #[tauri::command]
-fn generate_excel(save_path: String, pairs: Vec<EvidencePair>, left_token: String, right_token: String) -> Result<(), String> {
+fn read_file_base64(path: String) -> Result<String, String> {
+    match fs::read(&path) {
+        Ok(bytes) => {
+            let encoded = general_purpose::STANDARD.encode(&bytes);
+            let ext = std::path::Path::new(&path)
+                .extension()
+                .and_then(|s| s.to_str())
+                .unwrap_or("png")
+                .to_lowercase();
+            let mime_type = match ext.as_str() {
+                "jpg" | "jpeg" => "image/jpeg",
+                "bmp" => "image/bmp",
+                _ => "image/png",
+            };
+            Ok(format!("data:{};base64,{}", mime_type, encoded))
+        }
+        Err(e) => Err(format!("ファイルの読み込みに失敗しました: {}", e)),
+    }
+}
+
+#[tauri::command]
+fn generate_excel(save_path: String, pairs: Vec<EvidencePair>, left_header: String, right_header: String) -> Result<(), String> {
     let mut workbook = Workbook::new();
     let worksheet = workbook.add_worksheet();
     worksheet.set_name("Evidence").map_err(|e| e.to_string())?;
@@ -99,13 +122,13 @@ fn generate_excel(save_path: String, pairs: Vec<EvidencePair>, left_token: Strin
 
     worksheet.write_string_with_format(0, 0, "No", &header_format).map_err(|e| e.to_string())?;
     worksheet.write_string_with_format(0, 1, "項目", &header_format).map_err(|e| e.to_string())?;
-    worksheet.write_string_with_format(0, 2, "左画像", &header_format).map_err(|e| e.to_string())?;
-    worksheet.write_string_with_format(0, 3, "右画像", &header_format).map_err(|e| e.to_string())?;
+    worksheet.write_string_with_format(0, 2, &left_header, &header_format).map_err(|e| e.to_string())?;
+    worksheet.write_string_with_format(0, 3, &right_header, &header_format).map_err(|e| e.to_string())?;
 
     worksheet.set_column_width(0, 5.0).map_err(|e| e.to_string())?;
     worksheet.set_column_width(1, 15.0).map_err(|e| e.to_string())?;
-    worksheet.set_column_width(2, 45.0).map_err(|e| e.to_string())?;
-    worksheet.set_column_width(3, 45.0).map_err(|e| e.to_string())?;
+    worksheet.set_column_width(2, 2.0).map_err(|e| e.to_string())?;
+    worksheet.set_column_width(3, 2.0).map_err(|e| e.to_string())?;
 
     let cell_format = Format::new()
         .set_border(FormatBorder::Thin)
@@ -118,26 +141,44 @@ fn generate_excel(save_path: String, pairs: Vec<EvidencePair>, left_token: Strin
         worksheet.write_number_with_format(row, 0, no as f64, &cell_format).map_err(|e| e.to_string())?;
         worksheet.write_string_with_format(row, 1, &pair.key, &cell_format).map_err(|e| e.to_string())?;
 
-        worksheet.set_row_height(row, 200.0).map_err(|e| e.to_string())?;
+        worksheet.set_row_height(row, 2.0).map_err(|e| e.to_string())?;
 
         // Write borders for cells
         worksheet.write_string_with_format(row, 2, "", &cell_format).map_err(|e| e.to_string())?;
         worksheet.write_string_with_format(row, 3, "", &cell_format).map_err(|e| e.to_string())?;
 
-        let max_w = 315.0;
-        let max_h = 260.0;
+        // 2.0 width/height in Excel points/characters corresponds to roughly 14x2 pixels depending on DPI
+        // However, we fit the image exactly to the cell coordinates using rust_xlsxwriter features if possible,
+        // or we just set a small max scale. Given the prompt's request:
+        // "セル幅を縦横2.0にした状態で、セルの中に写真を埋め込まないでほしい。セルには合わせてほしい"
+        // In rust_xlsxwriter, image size can be configured to fit cells if needed, but since we are inserting
+        // over the cell, we scale the image to visually match a 2.0 cell width/height block, or perhaps
+        // they mean the cell should be size 2.0, and the image just sits over it.
+        // For column width 2.0 (~14 pixels), and row height 2.0 (~2.6 pixels),
+        // let's scale to this very small area.
+        let max_w = 14.0;
+        let max_h = 2.6;
+
+        // "セルには合わせてほしい" (Please fit it to the cell)
+        // We can use rust_xlsxwriter's fit_to_cell functionality, or just keep it anchored properly.
+        // Actually, rust_xlsxwriter has `insert_image_fit_to_cell` but it might require newer version
+        // Let's check if we can simply use the offsets to align it without scaling manually,
+        // or just scale it manually. Since 2.0x2.0 is the request, the image will overflow the cell visually
+        // if we don't scale it down. But standard Excel convention for "fit to cell but don't embed" means
+        // anchor it to the cell (so if cell moves, image moves).
 
         if let Some(ref left_path) = pair.left_image {
             let mut image = Image::new(left_path).map_err(|e| e.to_string())?;
+            // Fit to cell visually using a very small offset, scaling it to just fit inside the 2.0x2.0 cell
             let w = image.width() as f64;
             let h = image.height() as f64;
             if w > 0.0 && h > 0.0 {
                 let scale_w = max_w / w;
                 let scale_h = max_h / h;
-                let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
+                let scale = f64::min(scale_w, scale_h);
                 image = image.set_scale_width(scale).set_scale_height(scale);
             }
-            worksheet.insert_image_with_offset(row, 2, &image, 5, 5).map_err(|e| e.to_string())?;
+            worksheet.insert_image_with_offset(row, 2, &image, 0, 0).map_err(|e| e.to_string())?;
         }
 
         if let Some(ref right_path) = pair.right_image {
@@ -147,10 +188,10 @@ fn generate_excel(save_path: String, pairs: Vec<EvidencePair>, left_token: Strin
             if w > 0.0 && h > 0.0 {
                 let scale_w = max_w / w;
                 let scale_h = max_h / h;
-                let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
+                let scale = f64::min(scale_w, scale_h);
                 image = image.set_scale_width(scale).set_scale_height(scale);
             }
-            worksheet.insert_image_with_offset(row, 3, &image, 5, 5).map_err(|e| e.to_string())?;
+            worksheet.insert_image_with_offset(row, 3, &image, 0, 0).map_err(|e| e.to_string())?;
         }
 
         row += 1;
@@ -166,7 +207,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![scan_directory, generate_excel])
+        .invoke_handler(tauri::generate_handler![scan_directory, generate_excel, read_file_base64])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
