@@ -34,10 +34,10 @@ interface ScanResult {
 }
 
 function App() {
-  const [leftToken, setLeftToken] = useState("before");
-  const [rightToken, setRightToken] = useState("after");
-  const [leftHeader, setLeftHeader] = useState("左画像");
-  const [rightHeader, setRightHeader] = useState("右画像");
+  const [leftToken, setLeftToken] = useState("b");
+  const [rightToken, setRightToken] = useState("a");
+  const [leftHeader, setLeftHeader] = useState("改修前");
+  const [rightHeader, setRightHeader] = useState("改修後");
 
   const [folderPath, setFolderPath] = useState<string | null>(null);
   const [pairs, setPairs] = useState<EvidencePair[]>([]);
@@ -187,8 +187,8 @@ function App() {
           <thead>
             <tr>
               <th>項目</th>
-              <th>左画像</th>
-              <th>右画像</th>
+              <th>{leftHeader}</th>
+              <th>{rightHeader}</th>
             </tr>
           </thead>
           <tbody>
