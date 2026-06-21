@@ -120,65 +120,50 @@ fn generate_excel(save_path: String, pairs: Vec<EvidencePair>, left_header: Stri
         .set_align(FormatAlign::Center)
         .set_align(FormatAlign::VerticalCenter);
 
-    worksheet.write_string_with_format(0, 0, "No", &header_format).map_err(|e| e.to_string())?;
-    worksheet.write_string_with_format(0, 1, "項目", &header_format).map_err(|e| e.to_string())?;
-    worksheet.write_string_with_format(0, 2, &left_header, &header_format).map_err(|e| e.to_string())?;
-    worksheet.write_string_with_format(0, 3, &right_header, &header_format).map_err(|e| e.to_string())?;
+    // Configure whole sheet as a grid (width 2.0)
+    for col in 0..100 {
+        worksheet.set_column_width(col, 2.0).map_err(|e| e.to_string())?;
+    }
 
-    worksheet.set_column_width(0, 5.0).map_err(|e| e.to_string())?;
-    worksheet.set_column_width(1, 15.0).map_err(|e| e.to_string())?;
-    worksheet.set_column_width(2, 2.0).map_err(|e| e.to_string())?;
-    worksheet.set_column_width(3, 2.0).map_err(|e| e.to_string())?;
+    // Headers (Merged cells to be visible on the grid)
+    worksheet.merge_range(0, 0, 0, 2, "No", &header_format).map_err(|e| e.to_string())?;
+    worksheet.merge_range(0, 3, 0, 9, "項目", &header_format).map_err(|e| e.to_string())?;
+    worksheet.merge_range(0, 10, 0, 30, &left_header, &header_format).map_err(|e| e.to_string())?;
+    worksheet.merge_range(0, 32, 0, 52, &right_header, &header_format).map_err(|e| e.to_string())?;
 
     let cell_format = Format::new()
         .set_border(FormatBorder::Thin)
         .set_align(FormatAlign::Center)
         .set_align(FormatAlign::VerticalCenter);
 
-    let mut row = 1;
+    let mut row = 2; // Start from row 2 due to headers
     for (i, pair) in pairs.iter().enumerate() {
         let no = (i + 1) as u32;
-        worksheet.write_number_with_format(row, 0, no as f64, &cell_format).map_err(|e| e.to_string())?;
-        worksheet.write_string_with_format(row, 1, &pair.key, &cell_format).map_err(|e| e.to_string())?;
 
-        worksheet.set_row_height(row, 2.0).map_err(|e| e.to_string())?;
+        // Data cells
+        worksheet.merge_range(row, 0, row + 20, 2, &no.to_string(), &cell_format).map_err(|e| e.to_string())?;
+        worksheet.merge_range(row, 3, row + 20, 9, &pair.key, &cell_format).map_err(|e| e.to_string())?;
 
-        // Write borders for cells
-        worksheet.write_string_with_format(row, 2, "", &cell_format).map_err(|e| e.to_string())?;
-        worksheet.write_string_with_format(row, 3, "", &cell_format).map_err(|e| e.to_string())?;
+        // Ensure the grid rows are square height
+        for r in row..(row + 21) {
+            worksheet.set_row_height(r, 12.0).map_err(|e| e.to_string())?; // 12.0 height ~ square for 2.0 width
+        }
 
-        // 2.0 width/height in Excel points/characters corresponds to roughly 14x2 pixels depending on DPI
-        // However, we fit the image exactly to the cell coordinates using rust_xlsxwriter features if possible,
-        // or we just set a small max scale. Given the prompt's request:
-        // "セル幅を縦横2.0にした状態で、セルの中に写真を埋め込まないでほしい。セルには合わせてほしい"
-        // In rust_xlsxwriter, image size can be configured to fit cells if needed, but since we are inserting
-        // over the cell, we scale the image to visually match a 2.0 cell width/height block, or perhaps
-        // they mean the cell should be size 2.0, and the image just sits over it.
-        // For column width 2.0 (~14 pixels), and row height 2.0 (~2.6 pixels),
-        // let's scale to this very small area.
-        let max_w = 14.0;
-        let max_h = 2.6;
-
-        // "セルには合わせてほしい" (Please fit it to the cell)
-        // We can use rust_xlsxwriter's fit_to_cell functionality, or just keep it anchored properly.
-        // Actually, rust_xlsxwriter has `insert_image_fit_to_cell` but it might require newer version
-        // Let's check if we can simply use the offsets to align it without scaling manually,
-        // or just scale it manually. Since 2.0x2.0 is the request, the image will overflow the cell visually
-        // if we don't scale it down. But standard Excel convention for "fit to cell but don't embed" means
-        // anchor it to the cell (so if cell moves, image moves).
+        // Overlay images on top of the grid
+        let max_w = 315.0; // Standard viewable max width
+        let max_h = 260.0; // Standard viewable max height
 
         if let Some(ref left_path) = pair.left_image {
             let mut image = Image::new(left_path).map_err(|e| e.to_string())?;
-            // Fit to cell visually using a very small offset, scaling it to just fit inside the 2.0x2.0 cell
             let w = image.width() as f64;
             let h = image.height() as f64;
             if w > 0.0 && h > 0.0 {
                 let scale_w = max_w / w;
                 let scale_h = max_h / h;
-                let scale = f64::min(scale_w, scale_h);
+                let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
                 image = image.set_scale_width(scale).set_scale_height(scale);
             }
-            worksheet.insert_image_with_offset(row, 2, &image, 0, 0).map_err(|e| e.to_string())?;
+            worksheet.insert_image(row, 10, &image).map_err(|e| e.to_string())?;
         }
 
         if let Some(ref right_path) = pair.right_image {
@@ -188,13 +173,13 @@ fn generate_excel(save_path: String, pairs: Vec<EvidencePair>, left_header: Stri
             if w > 0.0 && h > 0.0 {
                 let scale_w = max_w / w;
                 let scale_h = max_h / h;
-                let scale = f64::min(scale_w, scale_h);
+                let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
                 image = image.set_scale_width(scale).set_scale_height(scale);
             }
-            worksheet.insert_image_with_offset(row, 3, &image, 0, 0).map_err(|e| e.to_string())?;
+            worksheet.insert_image(row, 32, &image).map_err(|e| e.to_string())?;
         }
 
-        row += 1;
+        row += 22;
     }
 
     workbook.save(save_path).map_err(|e| e.to_string())?;
