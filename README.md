@@ -1,7 +1,47 @@
-# Tauri + React + Typescript
+# Before/After 画像証跡作成ツール (MVP)
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+このアプリケーションは、開発業務における画面キャプチャの取得、整理、Excelへの貼り付け作業を効率化するためのツールです。フォルダ内の画像を自動的にペアリング（例：`_before` と `_after`）し、証跡資料としてExcel形式で出力します。
 
-## Recommended IDE Setup
+## 主な機能
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+*   **フォルダ選択**: 証跡画像が含まれるフォルダを選択します。
+*   **自動ペアリング**: 選択したフォルダ内の画像ファイル名から、左画像と右画像を自動的に判定・ペアリングします。
+*   **ペア一覧・サムネイル表示**: ペアリング結果をリスト表示し、画像のサムネイルを確認できます。片方の画像が不足している場合や重複している場合はエラーメッセージを表示します。
+*   **識別子のカスタマイズ**: `_before` や `_after` といったペア判定の文字列や、出力されるExcelのヘッダー文言を自由に設定できます。
+*   **Excel出力**: ボタン一つで、自動調整された画像付きのExcelファイル（方眼紙形式）を生成します。
+
+## 技術スタック
+
+*   **フロントエンド**: React, TypeScript, Vite
+*   **バックエンド**: Rust, Tauri v2
+*   **Excel生成**: rust_xlsxwriter
+
+## 開発・実行方法
+
+### 前提条件
+
+Tauri v2の開発環境が必要です。詳細は[公式ドキュメント](https://tauri.app/v1/guides/getting-started/prerequisites)を参照してください。
+
+### 依存関係のインストール
+
+```bash
+npm install
+```
+
+### 開発用サーバーの起動
+
+ホットリロード対応の開発モードでアプリを起動します。
+
+```bash
+npm run tauri dev
+```
+
+### アプリケーションのビルド
+
+リリース用のデスクトップアプリケーションをビルドします。
+
+```bash
+npm run tauri build
+```
+
+ビルドされた実行ファイルは `src-tauri/target/release/bundle/` 以下に出力されます。
