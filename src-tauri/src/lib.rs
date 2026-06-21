@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
-use rust_xlsxwriter::{Workbook, Image, Format, FormatBorder, FormatAlign};
+use rust_xlsxwriter::{Workbook, Image, Format, FormatBorder, FormatAlign, Color};
 use base64::{engine::general_purpose, Engine as _};
 use std::fs;
 
@@ -125,16 +125,40 @@ fn generate_excel(save_path: String, pairs: Vec<EvidencePair>, left_header: Stri
         worksheet.set_column_width(col, 2.0).map_err(|e| e.to_string())?;
     }
 
+    let left_header_format = Format::new()
+        .set_border(FormatBorder::Thin)
+        .set_align(FormatAlign::Center)
+        .set_align(FormatAlign::VerticalCenter)
+        .set_background_color(Color::Orange);
+
+    let right_header_format = Format::new()
+        .set_border(FormatBorder::Thin)
+        .set_align(FormatAlign::Center)
+        .set_align(FormatAlign::VerticalCenter)
+        .set_background_color(Color::Green);
+
     // Headers (Merged cells to be visible on the grid)
     worksheet.merge_range(0, 0, 0, 2, "No", &header_format).map_err(|e| e.to_string())?;
     worksheet.merge_range(0, 3, 0, 9, "項目", &header_format).map_err(|e| e.to_string())?;
-    worksheet.merge_range(0, 10, 0, 30, &left_header, &header_format).map_err(|e| e.to_string())?;
-    worksheet.merge_range(0, 32, 0, 52, &right_header, &header_format).map_err(|e| e.to_string())?;
+    worksheet.merge_range(0, 10, 0, 30, &left_header, &left_header_format).map_err(|e| e.to_string())?;
+    worksheet.merge_range(0, 32, 0, 52, &right_header, &right_header_format).map_err(|e| e.to_string())?;
 
     let cell_format = Format::new()
         .set_border(FormatBorder::Thin)
         .set_align(FormatAlign::Center)
         .set_align(FormatAlign::VerticalCenter);
+
+    let left_cell_format = Format::new()
+        .set_border(FormatBorder::Thin)
+        .set_align(FormatAlign::Center)
+        .set_align(FormatAlign::VerticalCenter)
+        .set_background_color(Color::Orange);
+
+    let right_cell_format = Format::new()
+        .set_border(FormatBorder::Thin)
+        .set_align(FormatAlign::Center)
+        .set_align(FormatAlign::VerticalCenter)
+        .set_background_color(Color::Green);
 
     let mut row = 2; // Start from row 2 due to headers
     for (i, pair) in pairs.iter().enumerate() {
@@ -143,6 +167,8 @@ fn generate_excel(save_path: String, pairs: Vec<EvidencePair>, left_header: Stri
         // Data cells
         worksheet.merge_range(row, 0, row + 20, 2, &no.to_string(), &cell_format).map_err(|e| e.to_string())?;
         worksheet.merge_range(row, 3, row + 20, 9, &pair.key, &cell_format).map_err(|e| e.to_string())?;
+        worksheet.merge_range(row, 10, row + 20, 30, "", &left_cell_format).map_err(|e| e.to_string())?;
+        worksheet.merge_range(row, 32, row + 20, 52, "", &right_cell_format).map_err(|e| e.to_string())?;
 
         // Ensure the grid rows are square height
         for r in row..(row + 21) {

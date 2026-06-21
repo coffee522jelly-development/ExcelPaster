@@ -87,9 +87,15 @@ function App() {
     }
 
     try {
+      const today = new Date();
+      const yy = String(today.getFullYear()).slice(-2);
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      const defaultFilename = `${yy}${mm}${dd}-検証シート.xlsx`;
+
       const savePath = await save({
         filters: [{ name: "Excel", extensions: ["xlsx"] }],
-        defaultPath: "evidence.xlsx",
+        defaultPath: defaultFilename,
       });
 
       if (savePath) {
