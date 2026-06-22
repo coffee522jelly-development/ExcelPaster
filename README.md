@@ -1,47 +1,47 @@
-# Svelte + TS + Vite
+# Before/After 画像証跡作成ツール (MVP)
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+このアプリケーションは、開発業務における画面キャプチャの取得、整理、Excelへの貼り付け作業を効率化するためのツールです。フォルダ内の画像を自動的にペアリング（例：`_b` と `_a`）し、証跡資料としてExcel形式で出力します。
 
-## Recommended IDE Setup
+## 主な機能
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+*   **フォルダ選択**: 証跡画像が含まれるフォルダを選択します。
+*   **自動ペアリング**: 選択したフォルダ内の画像ファイル名から、左画像と右画像を自動的に判定・ペアリングします。
+*   **ペア一覧・サムネイル表示**: ペアリング結果をリスト表示し、画像のサムネイルを確認できます。片方の画像が不足している場合や重複している場合はエラーメッセージを表示します。
+*   **識別子のカスタマイズ**: `_b` や `_a` といったペア判定の文字列や、出力されるExcelのヘッダー文言を自由に設定できます。
+*   **Excel出力**: ボタン一つで、自動調整された画像付きのExcelファイル（方眼紙形式）を生成します。
 
-## Need an official Svelte framework?
+## 技術スタック
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+*   **フロントエンド**: Svelte, TypeScript, Vite, Tailwind CSS, bits-ui
+*   **バックエンド**: Rust, Tauri v2
+*   **Excel生成**: rust_xlsxwriter
 
-## Technical considerations
+## 開発・実行方法
 
-**Why use this over SvelteKit?**
+### 前提条件
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+Tauri v2の開発環境が必要です。詳細は[公式ドキュメント](https://tauri.app/v1/guides/getting-started/prerequisites)を参照してください。
 
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+### 依存関係のインストール
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
-
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
-
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
-
-**Why include `.vscode/extensions.json`?**
-
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
-
-**Why enable `allowJs` in the TS template?**
-
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+```bash
+npm install
 ```
+
+### 開発用サーバーの起動
+
+ホットリロード対応の開発モードでアプリを起動します。
+
+```bash
+npm run tauri dev
+```
+
+### アプリケーションのビルド
+
+リリース用のデスクトップアプリケーションをビルドします。
+
+```bash
+npm run tauri build
+```
+
+ビルドされた実行ファイルは `src-tauri/target/release/bundle/` 以下に出力されます。

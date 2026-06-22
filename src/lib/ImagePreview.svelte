@@ -17,10 +17,10 @@
 </script>
 
 {#if dataUrl}
-  <div class="flex flex-col items-center gap-1">
-    <span class="text-green-700 font-bold">○</span>
-    <img src={dataUrl} alt="Preview" class="max-w-[100px] max-h-[80px] border border-gray-200 rounded" />
+  <div class="flex items-center gap-2">
+    <span class="text-green-600 dark:text-green-500 font-bold text-sm">○</span>
+    <img src={dataUrl} alt="Preview" class="h-12 w-auto object-contain border border-slate-200 dark:border-slate-700 rounded bg-slate-50 dark:bg-slate-950" />
   </div>
 {:else}
-  <span class="text-green-700 font-bold">○</span>
+  <span class="text-green-600 dark:text-green-500 font-bold text-sm pl-1">○</span>
 {/if}

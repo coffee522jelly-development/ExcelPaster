@@ -3,6 +3,7 @@
   import { open, save } from "@tauri-apps/plugin-dialog";
   import ImagePreview from "./lib/ImagePreview.svelte";
   import SettingsPanel from "./lib/SettingsPanel.svelte";
+  import ThemeToggle from "./lib/ThemeToggle.svelte";
   import "./app.css";
 
   interface EvidencePair {
@@ -105,9 +106,10 @@
   }
 </script>
 
-<main class="max-w-3xl mx-auto p-5 flex flex-col gap-5 bg-gray-50 min-h-screen text-gray-800">
+<main class="max-w-4xl mx-auto p-2 flex flex-col gap-2 min-h-screen text-xs">
 
-  <div class="flex justify-end">
+  <div class="flex justify-end items-center gap-1">
+    <ThemeToggle />
     <SettingsPanel
       bind:showSettings
       bind:leftToken
@@ -118,68 +120,67 @@
     />
   </div>
 
-  <div class="flex items-center gap-4 bg-white p-4 rounded-lg shadow mt-[-10px]">
+  <div class="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded shadow-sm border border-slate-200 dark:border-slate-800">
     <button
-      class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition-colors"
+      class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition-colors whitespace-nowrap"
       on:click={handleSelectFolder}
     >
       フォルダ選択
     </button>
     {#if folderPath}
-      <span class="text-sm text-gray-600 break-all">{folderPath}</span>
+      <span class="text-slate-600 dark:text-slate-400 truncate" title={folderPath}>{folderPath}</span>
     {/if}
   </div>
 
   {#if errors.length > 0}
-    <div class="bg-red-50 text-red-700 p-4 rounded-lg border border-red-200 flex flex-col gap-1">
+    <div class="bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-400 p-2 rounded border border-red-200 dark:border-red-900 flex flex-col gap-1">
       {#each errors as err}
-        <div class="text-sm">{err}</div>
+        <div>{err}</div>
       {/each}
     </div>
   {/if}
 
-  <div class="bg-white p-4 rounded-lg shadow overflow-x-auto">
-    <h3 class="mt-0 mb-4 text-lg font-semibold">ペア一覧</h3>
-    <table class="w-full border-collapse">
+  <div class="bg-white dark:bg-slate-900 p-2 rounded shadow-sm border border-slate-200 dark:border-slate-800 overflow-x-auto flex-1">
+    <table class="w-full border-collapse text-left">
       <thead>
-        <tr class="bg-gray-100">
-          <th class="border border-gray-300 p-2 text-left">項目</th>
-          <th class="border border-gray-300 p-2 text-left">{leftHeader}</th>
-          <th class="border border-gray-300 p-2 text-left">{rightHeader}</th>
+        <tr class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+          <th class="p-1 font-semibold w-32 truncate">項目</th>
+          <th class="p-1 font-semibold w-1/2">{leftHeader}</th>
+          <th class="p-1 font-semibold w-1/2">{rightHeader}</th>
         </tr>
       </thead>
       <tbody>
         {#each pairs as pair (pair.key)}
-          <tr>
-            <td class="border border-gray-300 p-2">{pair.key}</td>
-            <td class="border border-gray-300 p-2 text-center">
+          <tr class="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30">
+            <td class="p-1 font-medium truncate" title={pair.key}>{pair.key}</td>
+            <td class="p-1">
               {#if pair.left_image}
                 <ImagePreview path={pair.left_image} />
               {:else}
-                <span class="text-red-700 font-bold">×</span>
+                <span class="text-red-500 font-bold pl-1">×</span>
               {/if}
             </td>
-            <td class="border border-gray-300 p-2 text-center">
+            <td class="p-1">
               {#if pair.right_image}
                 <ImagePreview path={pair.right_image} />
               {:else}
-                <span class="text-red-700 font-bold">×</span>
+                <span class="text-red-500 font-bold pl-1">×</span>
               {/if}
             </td>
           </tr>
         {/each}
         {#if pairs.length === 0}
           <tr>
-            <td colspan="3" class="text-center text-gray-400 p-8 border border-gray-300">データがありません</td>
+            <td colspan="3" class="text-center text-slate-400 dark:text-slate-600 p-4">データがありません</td>
           </tr>
         {/if}
       </tbody>
     </table>
   </div>
 
-  <div class="flex justify-end mt-2">
+  <div class="flex justify-end pb-2">
     <button
-      class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+      class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition-colors disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed"
       on:click={handleExportExcel}
       disabled={isExporting || pairs.length === 0}
     >
