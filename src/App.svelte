@@ -107,16 +107,18 @@
 
 <main class="max-w-3xl mx-auto p-5 flex flex-col gap-5 bg-gray-50 min-h-screen text-gray-800">
 
-  <SettingsPanel
-    bind:showSettings
-    bind:leftToken
-    bind:rightToken
-    bind:leftHeader
-    bind:rightHeader
-    onTokenBlur={handleTokenBlur}
-  />
+  <div class="flex justify-end">
+    <SettingsPanel
+      bind:showSettings
+      bind:leftToken
+      bind:rightToken
+      bind:leftHeader
+      bind:rightHeader
+      onTokenBlur={handleTokenBlur}
+    />
+  </div>
 
-  <div class="flex items-center gap-4 bg-white p-4 rounded-lg shadow">
+  <div class="flex items-center gap-4 bg-white p-4 rounded-lg shadow mt-[-10px]">
     <button
       class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition-colors"
       on:click={handleSelectFolder}
