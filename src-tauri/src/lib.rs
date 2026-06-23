@@ -105,10 +105,20 @@ fn read_file_base64(path: String) -> Result<String, String> {
 }
 
 #[tauri::command]
-fn generate_excel(save_path: String, pairs: Vec<EvidencePair>, left_header: String, right_header: String) -> Result<(), String> {
+fn generate_excel(
+    save_path: String,
+    pairs: Vec<EvidencePair>,
+    left_header: String,
+    right_header: String,
+    left_color: String,
+    right_color: String,
+    sheet_name: String
+) -> Result<(), String> {
     let mut workbook = Workbook::new();
     let worksheet = workbook.add_worksheet();
-    worksheet.set_name("Evidence").map_err(|e| e.to_string())?;
+
+    let safe_sheet_name = if sheet_name.trim().is_empty() { "Evidence" } else { &sheet_name };
+    worksheet.set_name(safe_sheet_name).map_err(|e| e.to_string())?;
 
     // Page setup
     worksheet.set_landscape();
@@ -129,13 +139,13 @@ fn generate_excel(save_path: String, pairs: Vec<EvidencePair>, left_header: Stri
         .set_border(FormatBorder::Thin)
         .set_align(FormatAlign::Center)
         .set_align(FormatAlign::VerticalCenter)
-        .set_background_color(Color::Orange);
+        .set_background_color(left_color.as_str());
 
     let right_header_format = Format::new()
         .set_border(FormatBorder::Thin)
         .set_align(FormatAlign::Center)
         .set_align(FormatAlign::VerticalCenter)
-        .set_background_color(Color::Green);
+        .set_background_color(right_color.as_str());
 
     // Headers (Merged cells to be visible on the grid)
     worksheet.merge_range(0, 0, 0, 2, "No", &header_format).map_err(|e| e.to_string())?;
@@ -152,13 +162,13 @@ fn generate_excel(save_path: String, pairs: Vec<EvidencePair>, left_header: Stri
         .set_border(FormatBorder::Thin)
         .set_align(FormatAlign::Center)
         .set_align(FormatAlign::VerticalCenter)
-        .set_background_color(Color::Orange);
+        .set_background_color(left_color.as_str());
 
     let right_cell_format = Format::new()
         .set_border(FormatBorder::Thin)
         .set_align(FormatAlign::Center)
         .set_align(FormatAlign::VerticalCenter)
-        .set_background_color(Color::Green);
+        .set_background_color(right_color.as_str());
 
     let mut row = 2; // Start from row 2 due to headers
     for (i, pair) in pairs.iter().enumerate() {

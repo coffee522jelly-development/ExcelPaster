@@ -1,6 +1,7 @@
 <script lang="ts">
   import { invoke } from "@tauri-apps/api/core";
   import { open, save } from "@tauri-apps/plugin-dialog";
+  import { ArrowUp, ArrowDown } from "lucide-svelte";
   import ImagePreview from "./lib/ImagePreview.svelte";
   import SettingsPanel from "./lib/SettingsPanel.svelte";
   import ThemeToggle from "./lib/ThemeToggle.svelte";
@@ -21,6 +22,9 @@
   let rightToken = "a";
   let leftHeader = "改修前";
   let rightHeader = "改修後";
+  let leftColor = "#fed7aa"; // Default light orange
+  let rightColor = "#bbf7d0"; // Default light green
+  let sheetName = "検証結果";
 
   let folderPath: string | null = null;
   let pairs: EvidencePair[] = [];
@@ -94,6 +98,9 @@
           pairs,
           leftHeader,
           rightHeader,
+          leftColor,
+          rightColor,
+          sheetName,
         });
         alert("Excelの出力が完了しました");
       }
@@ -102,6 +109,26 @@
       alert(`Excelの出力に失敗しました: ${error}`);
     } finally {
       isExporting = false;
+    }
+  }
+
+  function moveUp(index: number) {
+    if (index > 0) {
+      const newPairs = [...pairs];
+      const temp = newPairs[index - 1];
+      newPairs[index - 1] = newPairs[index];
+      newPairs[index] = temp;
+      pairs = newPairs;
+    }
+  }
+
+  function moveDown(index: number) {
+    if (index < pairs.length - 1) {
+      const newPairs = [...pairs];
+      const temp = newPairs[index + 1];
+      newPairs[index + 1] = newPairs[index];
+      newPairs[index] = temp;
+      pairs = newPairs;
     }
   }
 </script>
@@ -116,6 +143,9 @@
       bind:rightToken
       bind:leftHeader
       bind:rightHeader
+      bind:leftColor
+      bind:rightColor
+      bind:sheetName
       onTokenBlur={handleTokenBlur}
     />
   </div>
@@ -144,14 +174,35 @@
     <table class="w-full border-collapse text-left">
       <thead>
         <tr class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+          <th class="p-1 font-semibold w-16 text-center">順序</th>
           <th class="p-1 font-semibold w-32 truncate">項目</th>
           <th class="p-1 font-semibold w-1/2">{leftHeader}</th>
           <th class="p-1 font-semibold w-1/2">{rightHeader}</th>
         </tr>
       </thead>
       <tbody>
-        {#each pairs as pair (pair.key)}
+        {#each pairs as pair, i (pair.key)}
           <tr class="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30">
+            <td class="p-1">
+              <div class="flex flex-col items-center gap-1">
+                <button
+                  class="p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed"
+                  on:click={() => moveUp(i)}
+                  disabled={i === 0}
+                  aria-label="上に移動"
+                >
+                  <ArrowUp size={14} />
+                </button>
+                <button
+                  class="p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 disabled:opacity-30 disabled:cursor-not-allowed"
+                  on:click={() => moveDown(i)}
+                  disabled={i === pairs.length - 1}
+                  aria-label="下に移動"
+                >
+                  <ArrowDown size={14} />
+                </button>
+              </div>
+            </td>
             <td class="p-1 font-medium truncate" title={pair.key}>{pair.key}</td>
             <td class="p-1">
               {#if pair.left_image}
@@ -171,7 +222,7 @@
         {/each}
         {#if pairs.length === 0}
           <tr>
-            <td colspan="3" class="text-center text-slate-400 dark:text-slate-600 p-4">データがありません</td>
+            <td colspan="4" class="text-center text-slate-400 dark:text-slate-600 p-4">データがありません</td>
           </tr>
         {/if}
       </tbody>
