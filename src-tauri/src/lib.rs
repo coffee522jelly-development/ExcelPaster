@@ -161,14 +161,12 @@ fn generate_excel(
     let left_cell_format = Format::new()
         .set_border(FormatBorder::Thin)
         .set_align(FormatAlign::Center)
-        .set_align(FormatAlign::VerticalCenter)
-        .set_background_color(left_color.as_str());
+        .set_align(FormatAlign::VerticalCenter);
 
     let right_cell_format = Format::new()
         .set_border(FormatBorder::Thin)
         .set_align(FormatAlign::Center)
-        .set_align(FormatAlign::VerticalCenter)
-        .set_background_color(right_color.as_str());
+        .set_align(FormatAlign::VerticalCenter);
 
     let mut row = 2; // Start from row 2 due to headers
     for (i, pair) in pairs.iter().enumerate() {

@@ -9,7 +9,6 @@
   export let rightHeader: string;
   export let leftColor: string;
   export let rightColor: string;
-  export let sheetName: string;
   export let onTokenBlur: () => void;
 </script>
 
@@ -88,15 +87,6 @@
             type="color"
             class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 rounded h-8 w-full cursor-pointer focus:ring-1 focus:ring-blue-500 focus:outline-none"
             bind:value={rightColor}
-          />
-        </div>
-        <div class="flex flex-col gap-1">
-          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="sheetName">出力シート名</label>
-          <input
-            id="sheetName"
-            type="text"
-            class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
-            bind:value={sheetName}
           />
         </div>
       </div>
