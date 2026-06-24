@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
-use rust_xlsxwriter::{Workbook, Image, Format, FormatBorder, FormatAlign, Color};
+use rust_xlsxwriter::{Workbook, Image, Format, FormatBorder, FormatAlign};
 use base64::{engine::general_purpose, Engine as _};
 use std::fs;
 
