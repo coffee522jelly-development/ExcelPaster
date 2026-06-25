@@ -10,6 +10,7 @@ pub struct EvidencePair {
     pub key: String,
     pub left_image: Option<String>,
     pub right_image: Option<String>,
+    pub extra_image: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -19,12 +20,21 @@ pub struct ScanResult {
 }
 
 #[tauri::command]
-fn scan_directory(path: String, left_token: String, right_token: String) -> ScanResult {
+fn scan_directory(path: String, left_token: String, right_token: String, extra_token: String) -> ScanResult {
     let mut pairs_map: HashMap<String, EvidencePair> = HashMap::new();
     let mut errors = Vec::new();
 
     let left_suffix = format!("_{}", left_token);
     let right_suffix = format!("_{}", right_token);
+    let extra_suffix = format!("_{}", extra_token);
+
+    // To prevent prefix collision (e.g. "_a" matching before "_aa"), we sort suffixes by length descending
+    let mut suffixes = vec![
+        (&left_suffix, "left"),
+        (&right_suffix, "right"),
+        (&extra_suffix, "extra"),
+    ];
+    suffixes.sort_by(|a, b| b.0.len().cmp(&a.0.len()));
 
     for entry in WalkDir::new(&path).into_iter().filter_map(|e| e.ok()) {
         let path = entry.path();
@@ -34,32 +44,45 @@ fn scan_directory(path: String, left_token: String, right_token: String) -> Scan
                 if ext == "png" || ext == "jpg" || ext == "jpeg" || ext == "bmp" {
                     if let Some(file_stem) = path.file_stem().and_then(|s| s.to_str()) {
                         let path_str = path.to_string_lossy().to_string();
-                        let left_match = file_stem.find(&left_suffix);
-                        let right_match = file_stem.find(&right_suffix);
 
-                        if let Some(idx) = left_match {
-                            let key = file_stem[..idx].to_string();
-                            let pair = pairs_map.entry(key.clone()).or_insert_with(|| EvidencePair {
-                                key: key.clone(),
-                                left_image: None,
-                                right_image: None,
-                            });
-                            if pair.left_image.is_some() {
-                                errors.push(format!("{} の左画像が複数存在します", key));
-                            } else {
-                                pair.left_image = Some(path_str);
-                            }
-                        } else if let Some(idx) = right_match {
-                            let key = file_stem[..idx].to_string();
-                            let pair = pairs_map.entry(key.clone()).or_insert_with(|| EvidencePair {
-                                key: key.clone(),
-                                left_image: None,
-                                right_image: None,
-                            });
-                            if pair.right_image.is_some() {
-                                errors.push(format!("{} の右画像が複数存在します", key));
-                            } else {
-                                pair.right_image = Some(path_str);
+                        for (suffix, token_type) in &suffixes {
+                            if let Some(idx) = file_stem.rfind(*suffix) {
+                                // Ensure it exactly matches the end of the stem
+                                if idx + suffix.len() == file_stem.len() {
+                                    let key = file_stem[..idx].to_string();
+                                    let pair = pairs_map.entry(key.clone()).or_insert_with(|| EvidencePair {
+                                        key: key.clone(),
+                                        left_image: None,
+                                        right_image: None,
+                                        extra_image: None,
+                                    });
+
+                                    match *token_type {
+                                        "left" => {
+                                            if pair.left_image.is_some() {
+                                                errors.push(format!("{} の左画像が複数存在します", key));
+                                            } else {
+                                                pair.left_image = Some(path_str);
+                                            }
+                                        }
+                                        "right" => {
+                                            if pair.right_image.is_some() {
+                                                errors.push(format!("{} の右画像が複数存在します", key));
+                                            } else {
+                                                pair.right_image = Some(path_str);
+                                            }
+                                        }
+                                        "extra" => {
+                                            if pair.extra_image.is_some() {
+                                                errors.push(format!("{} の補足画像が複数存在します", key));
+                                            } else {
+                                                pair.extra_image = Some(path_str);
+                                            }
+                                        }
+                                        _ => {}
+                                    }
+                                    break; // Only match the longest suffix once per file
+                                }
                             }
                         }
                     }
@@ -109,8 +132,10 @@ fn generate_excel(
     pairs: Vec<EvidencePair>,
     left_header: String,
     right_header: String,
+    extra_header: String,
     left_color: String,
     right_color: String,
+    extra_color: String,
     sheet_name: String
 ) -> Result<(), String> {
     let mut workbook = Workbook::new();
@@ -146,23 +171,25 @@ fn generate_excel(
         .set_align(FormatAlign::VerticalCenter)
         .set_background_color(right_color.as_str());
 
+    let extra_header_format = Format::new()
+        .set_border(FormatBorder::Thin)
+        .set_align(FormatAlign::Center)
+        .set_align(FormatAlign::VerticalCenter)
+        .set_background_color(extra_color.as_str());
+
     // Headers (Merged cells to be visible on the grid)
     worksheet.merge_range(0, 0, 0, 2, "No", &header_format).map_err(|e| e.to_string())?;
     worksheet.merge_range(0, 3, 0, 9, "項目", &header_format).map_err(|e| e.to_string())?;
     worksheet.merge_range(0, 10, 0, 30, &left_header, &left_header_format).map_err(|e| e.to_string())?;
     worksheet.merge_range(0, 32, 0, 52, &right_header, &right_header_format).map_err(|e| e.to_string())?;
+    worksheet.merge_range(0, 54, 0, 74, &extra_header, &extra_header_format).map_err(|e| e.to_string())?;
 
     let cell_format = Format::new()
         .set_border(FormatBorder::Thin)
         .set_align(FormatAlign::Center)
         .set_align(FormatAlign::VerticalCenter);
 
-    let left_cell_format = Format::new()
-        .set_border(FormatBorder::Thin)
-        .set_align(FormatAlign::Center)
-        .set_align(FormatAlign::VerticalCenter);
-
-    let right_cell_format = Format::new()
+    let empty_cell_format = Format::new()
         .set_border(FormatBorder::Thin)
         .set_align(FormatAlign::Center)
         .set_align(FormatAlign::VerticalCenter);
@@ -174,8 +201,9 @@ fn generate_excel(
         // Data cells
         worksheet.merge_range(row, 0, row + 20, 2, &no.to_string(), &cell_format).map_err(|e| e.to_string())?;
         worksheet.merge_range(row, 3, row + 20, 9, &pair.key, &cell_format).map_err(|e| e.to_string())?;
-        worksheet.merge_range(row, 10, row + 20, 30, "", &left_cell_format).map_err(|e| e.to_string())?;
-        worksheet.merge_range(row, 32, row + 20, 52, "", &right_cell_format).map_err(|e| e.to_string())?;
+        worksheet.merge_range(row, 10, row + 20, 30, "", &empty_cell_format).map_err(|e| e.to_string())?;
+        worksheet.merge_range(row, 32, row + 20, 52, "", &empty_cell_format).map_err(|e| e.to_string())?;
+        worksheet.merge_range(row, 54, row + 20, 74, "", &empty_cell_format).map_err(|e| e.to_string())?;
 
         // Ensure the grid rows are square height
         for r in row..(row + 21) {
@@ -210,6 +238,19 @@ fn generate_excel(
                 image = image.set_scale_width(scale).set_scale_height(scale);
             }
             worksheet.insert_image(row, 32, &image).map_err(|e| e.to_string())?;
+        }
+
+        if let Some(ref extra_path) = pair.extra_image {
+            let mut image = Image::new(extra_path).map_err(|e| e.to_string())?;
+            let w = image.width() as f64;
+            let h = image.height() as f64;
+            if w > 0.0 && h > 0.0 {
+                let scale_w = max_w / w;
+                let scale_h = max_h / h;
+                let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
+                image = image.set_scale_width(scale).set_scale_height(scale);
+            }
+            worksheet.insert_image(row, 54, &image).map_err(|e| e.to_string())?;
         }
 
         row += 22;

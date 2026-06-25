@@ -11,6 +11,7 @@
     key: string;
     left_image: string | null;
     right_image: string | null;
+    extra_image: string | null;
   }
 
   interface ScanResult {
@@ -20,10 +21,13 @@
 
   let leftToken = "b";
   let rightToken = "a";
+  let extraToken = "aa";
   let leftHeader = "改修前";
   let rightHeader = "改修後";
+  let extraHeader = "補足";
   let leftColor = "#fed7aa"; // Default light orange
   let rightColor = "#bbf7d0"; // Default light green
+  let extraColor = "#fef08a"; // Default light yellow
   let sheetName = "検証結果";
 
   let folderPath: string | null = null;
@@ -56,6 +60,7 @@
         path,
         leftToken,
         rightToken,
+        extraToken,
       });
       pairs = result.pairs;
       if (result.errors && result.errors.length > 0) {
@@ -98,8 +103,10 @@
           pairs,
           leftHeader,
           rightHeader,
+          extraHeader,
           leftColor,
           rightColor,
+          extraColor,
           sheetName,
         });
         alert("Excelの出力が完了しました");
@@ -151,10 +158,13 @@
       bind:showSettings
       bind:leftToken
       bind:rightToken
+      bind:extraToken
       bind:leftHeader
       bind:rightHeader
+      bind:extraHeader
       bind:leftColor
       bind:rightColor
+      bind:extraColor
       onTokenBlur={handleTokenBlur}
     />
   </div>
@@ -184,9 +194,10 @@
       <thead>
         <tr class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
           <th class="p-1 w-8"></th>
-          <th class="p-1 font-semibold w-32 truncate">項目</th>
-          <th class="p-1 font-semibold w-1/2">{leftHeader}</th>
-          <th class="p-1 font-semibold w-1/2">{rightHeader}</th>
+          <th class="p-1 font-semibold w-24 truncate">項目</th>
+          <th class="p-1 font-semibold w-1/3">{leftHeader}</th>
+          <th class="p-1 font-semibold w-1/3">{rightHeader}</th>
+          <th class="p-1 font-semibold w-1/3">{extraHeader}</th>
         </tr>
       </thead>
       <tbody>
@@ -219,11 +230,18 @@
                 <span class="text-red-500 font-bold pl-1">×</span>
               {/if}
             </td>
+            <td class="p-1">
+              {#if pair.extra_image}
+                <ImagePreview path={pair.extra_image} />
+              {:else}
+                <span class="text-slate-400 pl-1">-</span>
+              {/if}
+            </td>
           </tr>
         {/each}
         {#if pairs.length === 0}
           <tr>
-            <td colspan="4" class="text-center text-slate-400 dark:text-slate-600 p-4">データがありません</td>
+            <td colspan="5" class="text-center text-slate-400 dark:text-slate-600 p-4">データがありません</td>
           </tr>
         {/if}
       </tbody>

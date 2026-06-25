@@ -5,10 +5,13 @@
   export let showSettings: boolean;
   export let leftToken: string;
   export let rightToken: string;
+  export let extraToken: string;
   export let leftHeader: string;
   export let rightHeader: string;
+  export let extraHeader: string;
   export let leftColor: string;
   export let rightColor: string;
+  export let extraColor: string;
   export let onTokenBlur: () => void;
 </script>
 
@@ -54,6 +57,16 @@
           />
         </div>
         <div class="flex flex-col gap-1">
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="extraToken">補足画像識別子</label>
+          <input
+            id="extraToken"
+            type="text"
+            class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            bind:value={extraToken}
+            on:blur={onTokenBlur}
+          />
+        </div>
+        <div class="flex flex-col gap-1">
           <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="leftHeader">左画像エクセル文言</label>
           <input
             id="leftHeader"
@@ -72,6 +85,15 @@
           />
         </div>
         <div class="flex flex-col gap-1">
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="extraHeader">補足画像エクセル文言</label>
+          <input
+            id="extraHeader"
+            type="text"
+            class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            bind:value={extraHeader}
+          />
+        </div>
+        <div class="flex flex-col gap-1">
           <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="leftColor">左側セル背景色</label>
           <input
             id="leftColor"
@@ -87,6 +109,15 @@
             type="color"
             class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 rounded h-8 w-full cursor-pointer focus:ring-1 focus:ring-blue-500 focus:outline-none"
             bind:value={rightColor}
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="extraColor">補足セル背景色</label>
+          <input
+            id="extraColor"
+            type="color"
+            class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 rounded h-8 w-full cursor-pointer focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            bind:value={extraColor}
           />
         </div>
       </div>
