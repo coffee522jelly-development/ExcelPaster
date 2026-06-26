@@ -170,6 +170,14 @@
   </div>
 
   <div class="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded shadow-sm border border-slate-200 dark:border-slate-800">
+    <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="sheetNameTop">シート名:</label>
+    <input
+      id="sheetNameTop"
+      type="text"
+      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-32"
+      bind:value={sheetName}
+    />
+    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
     <button
       class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition-colors whitespace-nowrap"
       on:click={handleSelectFolder}
@@ -248,14 +256,7 @@
     </table>
   </div>
 
-  <div class="flex justify-end pb-2 items-center gap-2">
-    <label class="font-semibold text-slate-700 dark:text-slate-300" for="sheetName">シート名:</label>
-    <input
-      id="sheetName"
-      type="text"
-      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-32"
-      bind:value={sheetName}
-    />
+  <div class="flex justify-end pb-2">
     <button
       class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition-colors disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed"
       on:click={handleExportExcel}
