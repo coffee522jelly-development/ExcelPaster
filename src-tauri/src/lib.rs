@@ -4,6 +4,7 @@ use walkdir::WalkDir;
 use rust_xlsxwriter::{Workbook, Image, Format, FormatBorder, FormatAlign};
 use base64::{engine::general_purpose, Engine as _};
 use std::fs;
+use chrono::Local;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct EvidencePair {
@@ -183,6 +184,13 @@ fn generate_excel(
     worksheet.merge_range(0, 10, 0, 30, &left_header, &left_header_format).map_err(|e| e.to_string())?;
     worksheet.merge_range(0, 32, 0, 52, &right_header, &right_header_format).map_err(|e| e.to_string())?;
     worksheet.merge_range(0, 54, 0, 74, &extra_header, &extra_header_format).map_err(|e| e.to_string())?;
+
+    // Add current date to the top right
+    let current_date = Local::now().format("%Y/%m/%d").to_string();
+    let date_format = Format::new()
+        .set_align(FormatAlign::Right)
+        .set_align(FormatAlign::VerticalCenter);
+    worksheet.merge_range(0, 76, 0, 90, &current_date, &date_format).map_err(|e| e.to_string())?;
 
     let cell_format = Format::new()
         .set_border(FormatBorder::Thin)
