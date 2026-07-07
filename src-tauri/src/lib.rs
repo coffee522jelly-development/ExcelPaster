@@ -137,7 +137,8 @@ fn generate_excel(
     left_color: String,
     right_color: String,
     extra_color: String,
-    sheet_name: String
+    sheet_name: String,
+    subject: String
 ) -> Result<(), String> {
     let mut workbook = Workbook::new();
     let worksheet = workbook.add_worksheet();
@@ -178,12 +179,12 @@ fn generate_excel(
         .set_align(FormatAlign::VerticalCenter)
         .set_background_color(extra_color.as_str());
 
-    // Headers (Merged cells to be visible on the grid)
-    worksheet.merge_range(0, 0, 0, 2, "No", &header_format).map_err(|e| e.to_string())?;
-    worksheet.merge_range(0, 3, 0, 9, "項目", &header_format).map_err(|e| e.to_string())?;
-    worksheet.merge_range(0, 10, 0, 30, &left_header, &left_header_format).map_err(|e| e.to_string())?;
-    worksheet.merge_range(0, 32, 0, 52, &right_header, &right_header_format).map_err(|e| e.to_string())?;
-    worksheet.merge_range(0, 54, 0, 74, &extra_header, &extra_header_format).map_err(|e| e.to_string())?;
+    // Subject (Top left)
+    let subject_format = Format::new()
+        .set_bold()
+        .set_align(FormatAlign::Left)
+        .set_align(FormatAlign::VerticalCenter);
+    worksheet.merge_range(0, 0, 0, 74, &subject, &subject_format).map_err(|e| e.to_string())?;
 
     // Add current date to the top right
     let current_date = Local::now().format("%Y/%m/%d").to_string();
@@ -191,6 +192,13 @@ fn generate_excel(
         .set_align(FormatAlign::Right)
         .set_align(FormatAlign::VerticalCenter);
     worksheet.merge_range(0, 76, 0, 90, &current_date, &date_format).map_err(|e| e.to_string())?;
+
+    // Headers (Merged cells to be visible on the grid)
+    worksheet.merge_range(1, 0, 1, 2, "No", &header_format).map_err(|e| e.to_string())?;
+    worksheet.merge_range(1, 3, 1, 9, "項目", &header_format).map_err(|e| e.to_string())?;
+    worksheet.merge_range(1, 10, 1, 30, &left_header, &left_header_format).map_err(|e| e.to_string())?;
+    worksheet.merge_range(1, 32, 1, 52, &right_header, &right_header_format).map_err(|e| e.to_string())?;
+    worksheet.merge_range(1, 54, 1, 74, &extra_header, &extra_header_format).map_err(|e| e.to_string())?;
 
     let cell_format = Format::new()
         .set_border(FormatBorder::Thin)
@@ -202,7 +210,7 @@ fn generate_excel(
         .set_align(FormatAlign::Center)
         .set_align(FormatAlign::VerticalCenter);
 
-    let mut row = 2; // Start from row 2 due to headers
+    let mut row = 3; // Start from row 3 due to subject (0), headers (1), spacing (2 optionally, but row 3 leaves a gap? Let's just start at 3 for a small gap or 2. Actually if headers are 1, data is 2. Let's use 2 as data, wait, previously row was 2. Headers were 0, row 2 left a gap? Previously: Headers 0, Data 2. Yes, row 1 was empty for a small visual gap. Let's keep a gap: Headers 1, Data 3.)
     for (i, pair) in pairs.iter().enumerate() {
         let no = (i + 1) as u32;
 

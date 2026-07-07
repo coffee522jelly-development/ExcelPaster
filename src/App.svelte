@@ -29,6 +29,7 @@
   let rightColor = "#bbf7d0"; // Default light green
   let extraColor = "#fef08a"; // Default light yellow
   let sheetName = "検証結果";
+  let subject = "検証証跡";
 
   let folderPath: string | null = null;
   let pairs: EvidencePair[] = [];
@@ -108,6 +109,7 @@
           rightColor,
           extraColor,
           sheetName,
+          subject,
         });
         alert("Excelの出力が完了しました");
       }
@@ -174,12 +176,20 @@
     <input
       id="sheetNameTop"
       type="text"
-      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-32"
+      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
       bind:value={sheetName}
     />
     <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+    <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="subjectTop">主題:</label>
+    <input
+      id="subjectTop"
+      type="text"
+      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-48"
+      bind:value={subject}
+    />
+    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1 flex-shrink-0"></div>
     <button
-      class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition-colors whitespace-nowrap"
+      class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition-colors whitespace-nowrap flex-shrink-0"
       on:click={handleSelectFolder}
     >
       フォルダ選択
