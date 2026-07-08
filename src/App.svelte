@@ -28,8 +28,14 @@
   let leftColor = "#fed7aa"; // Default light orange
   let rightColor = "#bbf7d0"; // Default light green
   let extraColor = "#fef08a"; // Default light yellow
-  let sheetName = "検証結果";
-  let subject = "検証証跡";
+
+  const today = new Date();
+  const initYy = String(today.getFullYear()).slice(-2);
+  const initMm = String(today.getMonth() + 1).padStart(2, "0");
+  const initDd = String(today.getDate()).padStart(2, "0");
+
+  let sheetName = "検証（開発）";
+  let subject = `${initYy}${initMm}${initDd}-`;
 
   let folderPath: string | null = null;
   let pairs: EvidencePair[] = [];
@@ -132,6 +138,10 @@
     }
   }
 
+  function handleDragEnter(event: DragEvent) {
+    event.preventDefault();
+  }
+
   function handleDragOver(event: DragEvent, index: number) {
     event.preventDefault();
     if (event.dataTransfer) {
@@ -224,6 +234,7 @@
             class="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
             draggable="true"
             on:dragstart={(e) => handleDragStart(e, i)}
+            on:dragenter={handleDragEnter}
             on:dragover={(e) => handleDragOver(e, i)}
             on:drop={(e) => handleDrop(e, i)}
             class:opacity-50={draggedIndex === i}
