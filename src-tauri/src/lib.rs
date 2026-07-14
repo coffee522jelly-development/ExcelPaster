@@ -25,9 +25,9 @@ fn scan_directory(path: String, left_token: String, right_token: String, extra_t
     let mut pairs_map: HashMap<String, EvidencePair> = HashMap::new();
     let mut errors = Vec::new();
 
-    let left_suffix = format!("_{}", left_token);
-    let right_suffix = format!("_{}", right_token);
-    let extra_suffix = format!("_{}", extra_token);
+    let left_suffix = left_token;
+    let right_suffix = right_token;
+    let extra_suffix = extra_token;
 
     // To prevent prefix collision (e.g. "_a" matching before "_aa"), we sort suffixes by length descending
     let mut suffixes = vec![
@@ -119,7 +119,7 @@ fn rename_files(file_paths: Vec<String>, suffix: String) -> Result<(), String> {
         if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
             let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("");
 
-            let new_stem = format!("{}_{}", stem, suffix);
+            let new_stem = format!("{}{}", stem, suffix);
             let mut new_filename = new_stem;
             if !ext.is_empty() {
                 new_filename = format!("{}.{}", new_filename, ext);

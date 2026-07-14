@@ -22,9 +22,9 @@
     errors: string[];
   }
 
-  let leftToken = "b";
-  let rightToken = "a";
-  let extraToken = "aa";
+  let leftToken = "_b";
+  let rightToken = "_a";
+  let extraToken = "_aa";
   let leftHeader = "改修前";
   let rightHeader = "改修後";
   let extraHeader = "補足";
@@ -75,7 +75,7 @@
           filePaths: selected,
           suffix: suffix
         });
-        alert(`${selected.length}個のファイルに「_${suffix}」を付与しました`);
+        alert(`${selected.length}個のファイルに「${suffix}」を付与しました`);
 
         if (folderPath) {
           await scanDirectory(folderPath);
@@ -179,6 +179,7 @@
       bind:rightColor
       bind:extraColor
       onTokenBlur={handleTokenBlur}
+      {handleBatchRename}
     />
   </div>
 
@@ -204,21 +205,6 @@
       on:click={handleSelectFolder}
     >
       フォルダ選択
-    </button>
-
-    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
-
-    <button
-      class="px-2 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded transition-colors whitespace-nowrap"
-      on:click={() => handleBatchRename(leftToken)}
-    >
-      左画像リネーム(_{leftToken})
-    </button>
-    <button
-      class="px-2 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded transition-colors whitespace-nowrap"
-      on:click={() => handleBatchRename(rightToken)}
-    >
-      右画像リネーム(_{rightToken})
     </button>
 
     {#if folderPath}
