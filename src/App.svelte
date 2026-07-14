@@ -1,13 +1,16 @@
 <script lang="ts">
+  import type { DndEvent } from "svelte-dnd-action";
   import { invoke } from "@tauri-apps/api/core";
   import { open, save } from "@tauri-apps/plugin-dialog";
   import { GripVertical } from "lucide-svelte";
+  import { dndzone } from "svelte-dnd-action";
   import ImagePreview from "./lib/ImagePreview.svelte";
   import SettingsPanel from "./lib/SettingsPanel.svelte";
   import ThemeToggle from "./lib/ThemeToggle.svelte";
   import "./app.css";
 
   interface EvidencePair {
+    id?: string;
     key: string;
     left_image: string | null;
     right_image: string | null;
@@ -60,6 +63,30 @@
     }
   }
 
+  async function handleBatchRename(suffix: string) {
+    try {
+      const selected = await open({
+        multiple: true,
+        filters: [{ name: "Images", extensions: ["png", "jpg", "jpeg", "bmp"] }]
+      });
+
+      if (selected && Array.isArray(selected) && selected.length > 0) {
+        await invoke("rename_files", {
+          filePaths: selected,
+          suffix: suffix
+        });
+        alert(`${selected.length}個のファイルに「_${suffix}」を付与しました`);
+
+        if (folderPath) {
+          await scanDirectory(folderPath);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to rename files", error);
+      errors = [`一括リネームに失敗しました: ${error}`];
+    }
+  }
+
   async function scanDirectory(path: string) {
     try {
       errors = [];
@@ -69,7 +96,7 @@
         rightToken,
         extraToken,
       });
-      pairs = result.pairs;
+      pairs = result.pairs.map((p) => ({ ...p, id: p.key }));
       if (result.errors && result.errors.length > 0) {
         errors = result.errors;
       }
@@ -127,38 +154,12 @@
     }
   }
 
-  let draggedIndex: number | null = null;
-
-  function handleDragStart(event: DragEvent, index: number) {
-    draggedIndex = index;
-    if (event.dataTransfer) {
-      event.dataTransfer.effectAllowed = 'move';
-      // Required for Firefox
-      event.dataTransfer.setData('text/plain', index.toString());
-    }
+  function handleDndConsider(e: CustomEvent<DndEvent<EvidencePair>>) {
+    pairs = e.detail.items;
   }
 
-  function handleDragEnter(event: DragEvent) {
-    event.preventDefault();
-  }
-
-  function handleDragOver(event: DragEvent, index: number) {
-    event.preventDefault();
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = 'move';
-    }
-  }
-
-  function handleDrop(event: DragEvent, index: number) {
-    event.preventDefault();
-    if (draggedIndex !== null && draggedIndex !== index) {
-      const newPairs = [...pairs];
-      const draggedItem = newPairs[draggedIndex];
-      newPairs.splice(draggedIndex, 1);
-      newPairs.splice(index, 0, draggedItem);
-      pairs = newPairs;
-    }
-    draggedIndex = null;
+  function handleDndFinalize(e: CustomEvent<DndEvent<EvidencePair>>) {
+    pairs = e.detail.items;
   }
 </script>
 
@@ -204,8 +205,25 @@
     >
       フォルダ選択
     </button>
+
+    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
+    <button
+      class="px-2 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded transition-colors whitespace-nowrap"
+      on:click={() => handleBatchRename(leftToken)}
+    >
+      左画像リネーム(_{leftToken})
+    </button>
+    <button
+      class="px-2 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded transition-colors whitespace-nowrap"
+      on:click={() => handleBatchRename(rightToken)}
+    >
+      右画像リネーム(_{rightToken})
+    </button>
+
     {#if folderPath}
-      <span class="text-slate-600 dark:text-slate-400 truncate" title={folderPath}>{folderPath}</span>
+      <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1 flex-shrink-0"></div>
+      <span class="text-slate-600 dark:text-slate-400 truncate min-w-0 flex-1" title={folderPath}>{folderPath}</span>
     {/if}
   </div>
 
@@ -228,18 +246,16 @@
           <th class="p-1 font-semibold w-1/3">{extraHeader}</th>
         </tr>
       </thead>
-      <tbody>
-        {#each pairs as pair, i (pair.key)}
+      <tbody
+        use:dndzone={{items: pairs, flipDurationMs: 300, dropTargetStyle: { outline: 'none' }}}
+        on:consider={handleDndConsider}
+        on:finalize={handleDndFinalize}
+      >
+        {#each pairs as pair (pair.id)}
           <tr
-            class="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
-            draggable="true"
-            on:dragstart={(e) => handleDragStart(e, i)}
-            on:dragenter={handleDragEnter}
-            on:dragover={(e) => handleDragOver(e, i)}
-            on:drop={(e) => handleDrop(e, i)}
-            class:opacity-50={draggedIndex === i}
+            class="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors bg-white dark:bg-slate-900"
           >
-            <td class="p-1 cursor-grab active:cursor-grabbing text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+            <td class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
               <div class="flex justify-center">
                 <GripVertical size={16} />
               </div>

@@ -107,6 +107,35 @@ fn scan_directory(path: String, left_token: String, right_token: String, extra_t
 }
 
 #[tauri::command]
+fn rename_files(file_paths: Vec<String>, suffix: String) -> Result<(), String> {
+    for path_str in file_paths {
+        let path = std::path::Path::new(&path_str);
+        if !path.is_file() {
+            continue;
+        }
+
+        let parent = path.parent().unwrap_or(std::path::Path::new(""));
+
+        if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
+            let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("");
+
+            let new_stem = format!("{}_{}", stem, suffix);
+            let mut new_filename = new_stem;
+            if !ext.is_empty() {
+                new_filename = format!("{}.{}", new_filename, ext);
+            }
+
+            let new_path = parent.join(new_filename);
+
+            if let Err(e) = fs::rename(&path, &new_path) {
+                return Err(format!("ファイル '{}' のリネームに失敗しました: {}", path_str, e));
+            }
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
 fn read_file_base64(path: String) -> Result<String, String> {
     match fs::read(&path) {
         Ok(bytes) => {
@@ -282,7 +311,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![scan_directory, generate_excel, read_file_base64])
+        .invoke_handler(tauri::generate_handler![scan_directory, generate_excel, read_file_base64, rename_files])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
