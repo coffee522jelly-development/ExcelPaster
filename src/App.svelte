@@ -205,21 +205,6 @@
     >
       フォルダ選択
     </button>
-
-    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1 flex-shrink-0"></div>
-    <span class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">一括リネーム:</span>
-    <button
-      class="px-2 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded transition-colors whitespace-nowrap flex-shrink-0"
-      on:click={() => handleBatchRename(leftToken)}
-    >
-      左側識別子
-    </button>
-    <button
-      class="px-2 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded transition-colors whitespace-nowrap flex-shrink-0"
-      on:click={() => handleBatchRename(rightToken)}
-    >
-      右側識別子
-    </button>
   </div>
 
   {#if folderPath}
@@ -294,7 +279,22 @@
     </table>
   </div>
 
-  <div class="flex justify-end pb-2">
+  <div class="flex justify-between items-center pb-2">
+    <div class="flex items-center gap-2">
+      <span class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">一括リネーム:</span>
+      <button
+        class="px-2 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded transition-colors whitespace-nowrap flex-shrink-0"
+        on:click={() => handleBatchRename(leftToken)}
+      >
+        左側識別子
+      </button>
+      <button
+        class="px-2 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded transition-colors whitespace-nowrap flex-shrink-0"
+        on:click={() => handleBatchRename(rightToken)}
+      >
+        右側識別子
+      </button>
+    </div>
     <button
       class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition-colors disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed"
       on:click={handleExportExcel}
