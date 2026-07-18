@@ -179,7 +179,6 @@
       bind:rightColor
       bind:extraColor
       onTokenBlur={handleTokenBlur}
-      {handleBatchRename}
     />
   </div>
 
@@ -207,11 +206,27 @@
       フォルダ選択
     </button>
 
-    {#if folderPath}
-      <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1 flex-shrink-0"></div>
-      <span class="text-slate-600 dark:text-slate-400 truncate min-w-0 flex-1" title={folderPath}>{folderPath}</span>
-    {/if}
+    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1 flex-shrink-0"></div>
+    <span class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">一括リネーム:</span>
+    <button
+      class="px-2 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded transition-colors whitespace-nowrap flex-shrink-0"
+      on:click={() => handleBatchRename(leftToken)}
+    >
+      左側識別子
+    </button>
+    <button
+      class="px-2 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded transition-colors whitespace-nowrap flex-shrink-0"
+      on:click={() => handleBatchRename(rightToken)}
+    >
+      右側識別子
+    </button>
   </div>
+
+  {#if folderPath}
+    <div class="px-2 text-slate-600 dark:text-slate-400 truncate text-xs" title={folderPath}>
+      {folderPath}
+    </div>
+  {/if}
 
   {#if errors.length > 0}
     <div class="bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-400 p-2 rounded border border-red-200 dark:border-red-900 flex flex-col gap-1">

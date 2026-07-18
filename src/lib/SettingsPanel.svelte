@@ -13,7 +13,6 @@
   export let rightColor: string;
   export let extraColor: string;
   export let onTokenBlur: () => void;
-  export let handleBatchRename: (suffix: string) => Promise<void>;
 </script>
 
 <Dialog.Root bind:open={showSettings}>
@@ -120,23 +119,6 @@
             class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 rounded h-8 w-full cursor-pointer focus:ring-1 focus:ring-blue-500 focus:outline-none"
             bind:value={extraColor}
           />
-        </div>
-      </div>
-
-      <div class="border-t border-slate-200 dark:border-slate-800 pt-4 mt-2">
-        <div class="flex flex-col gap-2">
-          <button
-            class="w-full text-left px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded transition-colors text-xs"
-            on:click={() => handleBatchRename(leftToken)}
-          >
-            一括画像リネーム 左側識別子
-          </button>
-          <button
-            class="w-full text-left px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded transition-colors text-xs"
-            on:click={() => handleBatchRename(rightToken)}
-          >
-            一括画像リネーム 右側識別子
-          </button>
         </div>
       </div>
 
