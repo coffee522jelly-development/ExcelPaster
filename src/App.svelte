@@ -237,45 +237,49 @@
         on:consider={handleDndConsider}
         on:finalize={handleDndFinalize}
       >
-        {#each pairs as pair (pair.id)}
-          <tr
-            class="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors bg-white dark:bg-slate-900"
-          >
-            <td class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-              <div class="flex justify-center">
-                <GripVertical size={16} />
-              </div>
-            </td>
-            <td class="p-1 font-medium truncate" title={pair.key}>{pair.key}</td>
-            <td class="p-1">
-              {#if pair.left_image}
-                <ImagePreview path={pair.left_image} />
-              {:else}
-                <span class="text-red-500 font-bold pl-1">×</span>
-              {/if}
-            </td>
-            <td class="p-1">
-              {#if pair.right_image}
-                <ImagePreview path={pair.right_image} />
-              {:else}
-                <span class="text-red-500 font-bold pl-1">×</span>
-              {/if}
-            </td>
-            <td class="p-1">
-              {#if pair.extra_image}
-                <ImagePreview path={pair.extra_image} />
-              {:else}
-                <span class="text-slate-400 pl-1">-</span>
-              {/if}
-            </td>
-          </tr>
-        {/each}
-        {#if pairs.length === 0}
+        {#if pairs.length > 0}
+          {#each pairs as pair (pair.id)}
+            <tr
+              class="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors bg-white dark:bg-slate-900"
+            >
+              <td class="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <div class="flex justify-center">
+                  <GripVertical size={16} />
+                </div>
+              </td>
+              <td class="p-1 font-medium truncate" title={pair.key}>{pair.key}</td>
+              <td class="p-1">
+                {#if pair.left_image}
+                  <ImagePreview path={pair.left_image} />
+                {:else}
+                  <span class="text-red-500 font-bold pl-1">×</span>
+                {/if}
+              </td>
+              <td class="p-1">
+                {#if pair.right_image}
+                  <ImagePreview path={pair.right_image} />
+                {:else}
+                  <span class="text-red-500 font-bold pl-1">×</span>
+                {/if}
+              </td>
+              <td class="p-1">
+                {#if pair.extra_image}
+                  <ImagePreview path={pair.extra_image} />
+                {:else}
+                  <span class="text-slate-400 pl-1">-</span>
+                {/if}
+              </td>
+            </tr>
+          {/each}
+        {/if}
+      </tbody>
+      {#if pairs.length === 0}
+        <tbody>
           <tr>
             <td colspan="5" class="text-center text-slate-400 dark:text-slate-600 p-4">データがありません</td>
           </tr>
-        {/if}
-      </tbody>
+        </tbody>
+      {/if}
     </table>
   </div>
 
