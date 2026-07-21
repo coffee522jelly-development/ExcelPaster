@@ -32,6 +32,10 @@
   let rightColor = "#bbf7d0"; // Default light green
   let extraColor = "#fef08a"; // Default light yellow
 
+  let authorName = "担当者名";
+  let registeredSystems = "システムA,システムB,システムC";
+  let selectedSystem = "システムA";
+
   const today = new Date();
   const initYy = String(today.getFullYear()).slice(-2);
   const initMm = String(today.getMonth() + 1).padStart(2, "0");
@@ -123,7 +127,15 @@
       const yy = String(today.getFullYear()).slice(-2);
       const mm = String(today.getMonth() + 1).padStart(2, "0");
       const dd = String(today.getDate()).padStart(2, "0");
-      const defaultFilename = `${yy}${mm}${dd}-検証シート.xlsx`;
+
+      // Default rule: 日付-【氏名】システム名-主題.xlsx
+      // Parse out the date prefix if user kept the default `YYMMDD-` format in subject
+      let cleanSubject = subject;
+      if (subject.startsWith(`${yy}${mm}${dd}-`)) {
+        cleanSubject = subject.slice(7);
+      }
+
+      const defaultFilename = `${yy}${mm}${dd}-【${authorName}】${selectedSystem}-${cleanSubject}.xlsx`;
 
       const savePath = await save({
         filters: [{ name: "Excel", extensions: ["xlsx"] }],
@@ -178,6 +190,9 @@
       bind:leftColor
       bind:rightColor
       bind:extraColor
+        bind:authorName
+        bind:registeredSystems
+        bind:selectedSystem
       onTokenBlur={handleTokenBlur}
     />
   </div>
@@ -190,6 +205,17 @@
       class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
       bind:value={sheetName}
     />
+    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+    <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="systemTop">システム:</label>
+    <select
+      id="systemTop"
+      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+      bind:value={selectedSystem}
+    >
+      {#each registeredSystems.split(',').map(s => s.trim()).filter(s => s) as sys}
+        <option value={sys}>{sys}</option>
+      {/each}
+    </select>
     <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
     <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="subjectTop">主題:</label>
     <input
