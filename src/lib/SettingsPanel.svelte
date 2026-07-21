@@ -12,6 +12,9 @@
   export let leftColor: string;
   export let rightColor: string;
   export let extraColor: string;
+  export let authorName: string;
+  export let registeredSystems: string;
+  export let selectedSystem: string;
   export let onTokenBlur: () => void;
 </script>
 
@@ -36,6 +39,38 @@
       </div>
 
       <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-1">
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="authorName">氏名</label>
+          <input
+            id="authorName"
+            type="text"
+            class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            bind:value={authorName}
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="registeredSystems">登録システム名 (カンマ区切り)</label>
+          <input
+            id="registeredSystems"
+            type="text"
+            class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            bind:value={registeredSystems}
+            placeholder="システムA,システムB"
+          />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="selectedSystemSettings">デフォルトシステム</label>
+          <select
+            id="selectedSystemSettings"
+            class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            bind:value={selectedSystem}
+          >
+            {#each registeredSystems.split(',').map(s => s.trim()).filter(s => s) as sys}
+              <option value={sys}>{sys}</option>
+            {/each}
+          </select>
+        </div>
+        <div class="w-full h-px bg-slate-200 dark:bg-slate-700 my-1"></div>
         <div class="flex flex-col gap-1">
           <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="leftToken">左画像識別子</label>
           <input

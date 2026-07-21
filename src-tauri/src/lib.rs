@@ -185,10 +185,12 @@ fn generate_excel(
         .set_align(FormatAlign::Center)
         .set_align(FormatAlign::VerticalCenter);
 
-    // Configure whole sheet as a grid (width 2.0)
-    for col in 0..100 {
-        worksheet.set_column_width(col, 2.0).map_err(|e| e.to_string())?;
-    }
+    // Configure columns explicitly instead of a grid, avoiding merge_range
+    worksheet.set_column_width(0, 6.0).map_err(|e| e.to_string())?; // No
+    worksheet.set_column_width(1, 14.0).map_err(|e| e.to_string())?; // 項目
+    worksheet.set_column_width(2, 42.0).map_err(|e| e.to_string())?; // Left Image
+    worksheet.set_column_width(3, 42.0).map_err(|e| e.to_string())?; // Right Image
+    worksheet.set_column_width(4, 42.0).map_err(|e| e.to_string())?; // Extra Image
 
     let left_header_format = Format::new()
         .set_border(FormatBorder::Thin)
@@ -213,21 +215,32 @@ fn generate_excel(
         .set_bold()
         .set_align(FormatAlign::Left)
         .set_align(FormatAlign::VerticalCenter);
-    worksheet.merge_range(0, 0, 0, 74, &subject, &subject_format).map_err(|e| e.to_string())?;
+    worksheet.write_string(0, 0, &subject).map_err(|e| e.to_string())?;
+    worksheet.set_cell_format(0, 0, &subject_format).map_err(|e| e.to_string())?;
 
     // Add current date to the top right
     let current_date = Local::now().format("%Y/%m/%d").to_string();
     let date_format = Format::new()
         .set_align(FormatAlign::Right)
         .set_align(FormatAlign::VerticalCenter);
-    worksheet.merge_range(0, 76, 0, 90, &current_date, &date_format).map_err(|e| e.to_string())?;
+    worksheet.write_string(0, 4, &current_date).map_err(|e| e.to_string())?;
+    worksheet.set_cell_format(0, 4, &date_format).map_err(|e| e.to_string())?;
 
-    // Headers (Merged cells to be visible on the grid)
-    worksheet.merge_range(1, 0, 1, 2, "No", &header_format).map_err(|e| e.to_string())?;
-    worksheet.merge_range(1, 3, 1, 9, "項目", &header_format).map_err(|e| e.to_string())?;
-    worksheet.merge_range(1, 10, 1, 30, &left_header, &left_header_format).map_err(|e| e.to_string())?;
-    worksheet.merge_range(1, 32, 1, 52, &right_header, &right_header_format).map_err(|e| e.to_string())?;
-    worksheet.merge_range(1, 54, 1, 74, &extra_header, &extra_header_format).map_err(|e| e.to_string())?;
+    // Headers
+    worksheet.write_string(1, 0, "No").map_err(|e| e.to_string())?;
+    worksheet.set_cell_format(1, 0, &header_format).map_err(|e| e.to_string())?;
+
+    worksheet.write_string(1, 1, "項目").map_err(|e| e.to_string())?;
+    worksheet.set_cell_format(1, 1, &header_format).map_err(|e| e.to_string())?;
+
+    worksheet.write_string(1, 2, &left_header).map_err(|e| e.to_string())?;
+    worksheet.set_cell_format(1, 2, &left_header_format).map_err(|e| e.to_string())?;
+
+    worksheet.write_string(1, 3, &right_header).map_err(|e| e.to_string())?;
+    worksheet.set_cell_format(1, 3, &right_header_format).map_err(|e| e.to_string())?;
+
+    worksheet.write_string(1, 4, &extra_header).map_err(|e| e.to_string())?;
+    worksheet.set_cell_format(1, 4, &extra_header_format).map_err(|e| e.to_string())?;
 
     let cell_format = Format::new()
         .set_border(FormatBorder::Thin)
@@ -239,23 +252,30 @@ fn generate_excel(
         .set_align(FormatAlign::Center)
         .set_align(FormatAlign::VerticalCenter);
 
-    let mut row = 3; // Start from row 3 due to subject (0), headers (1), spacing (2 optionally, but row 3 leaves a gap? Let's just start at 3 for a small gap or 2. Actually if headers are 1, data is 2. Let's use 2 as data, wait, previously row was 2. Headers were 0, row 2 left a gap? Previously: Headers 0, Data 2. Yes, row 1 was empty for a small visual gap. Let's keep a gap: Headers 1, Data 3.)
+    let mut row = 3;
     for (i, pair) in pairs.iter().enumerate() {
         let no = (i + 1) as u32;
 
+        // Ensure row height is large enough for the images
+        worksheet.set_row_height(row, 252.0).map_err(|e| e.to_string())?;
+
         // Data cells
-        worksheet.merge_range(row, 0, row + 20, 2, &no.to_string(), &cell_format).map_err(|e| e.to_string())?;
-        worksheet.merge_range(row, 3, row + 20, 9, &pair.key, &cell_format).map_err(|e| e.to_string())?;
-        worksheet.merge_range(row, 10, row + 20, 30, "", &empty_cell_format).map_err(|e| e.to_string())?;
-        worksheet.merge_range(row, 32, row + 20, 52, "", &empty_cell_format).map_err(|e| e.to_string())?;
-        worksheet.merge_range(row, 54, row + 20, 74, "", &empty_cell_format).map_err(|e| e.to_string())?;
+        worksheet.write_string(row, 0, &no.to_string()).map_err(|e| e.to_string())?;
+        worksheet.set_cell_format(row, 0, &cell_format).map_err(|e| e.to_string())?;
 
-        // Ensure the grid rows are square height
-        for r in row..(row + 21) {
-            worksheet.set_row_height(r, 12.0).map_err(|e| e.to_string())?; // 12.0 height ~ square for 2.0 width
-        }
+        worksheet.write_string(row, 1, &pair.key).map_err(|e| e.to_string())?;
+        worksheet.set_cell_format(row, 1, &cell_format).map_err(|e| e.to_string())?;
 
-        // Overlay images on top of the grid
+        worksheet.write_string(row, 2, "").map_err(|e| e.to_string())?;
+        worksheet.set_cell_format(row, 2, &empty_cell_format).map_err(|e| e.to_string())?;
+
+        worksheet.write_string(row, 3, "").map_err(|e| e.to_string())?;
+        worksheet.set_cell_format(row, 3, &empty_cell_format).map_err(|e| e.to_string())?;
+
+        worksheet.write_string(row, 4, "").map_err(|e| e.to_string())?;
+        worksheet.set_cell_format(row, 4, &empty_cell_format).map_err(|e| e.to_string())?;
+
+        // Images layout
         let max_w = 315.0; // Standard viewable max width
         let max_h = 260.0; // Standard viewable max height
 
@@ -269,7 +289,7 @@ fn generate_excel(
                 let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
                 image = image.set_scale_width(scale).set_scale_height(scale);
             }
-            worksheet.insert_image(row, 10, &image).map_err(|e| e.to_string())?;
+            worksheet.insert_image_with_offset(row, 2, &image, 2, 2).map_err(|e| e.to_string())?;
         }
 
         if let Some(ref right_path) = pair.right_image {
@@ -282,7 +302,7 @@ fn generate_excel(
                 let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
                 image = image.set_scale_width(scale).set_scale_height(scale);
             }
-            worksheet.insert_image(row, 32, &image).map_err(|e| e.to_string())?;
+            worksheet.insert_image_with_offset(row, 3, &image, 2, 2).map_err(|e| e.to_string())?;
         }
 
         if let Some(ref extra_path) = pair.extra_image {
@@ -295,10 +315,10 @@ fn generate_excel(
                 let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
                 image = image.set_scale_width(scale).set_scale_height(scale);
             }
-            worksheet.insert_image(row, 54, &image).map_err(|e| e.to_string())?;
+            worksheet.insert_image_with_offset(row, 4, &image, 2, 2).map_err(|e| e.to_string())?;
         }
 
-        row += 22;
+        row += 2; // Leave a blank row as a gap between entries
     }
 
     workbook.save(save_path).map_err(|e| e.to_string())?;
