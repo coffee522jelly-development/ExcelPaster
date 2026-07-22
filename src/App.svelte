@@ -7,6 +7,7 @@
   import ImagePreview from "./lib/ImagePreview.svelte";
   import SettingsPanel from "./lib/SettingsPanel.svelte";
   import ThemeToggle from "./lib/ThemeToggle.svelte";
+  import { onMount } from "svelte";
   import "./app.css";
 
   interface EvidencePair {
@@ -35,20 +36,68 @@
   let authorName = "担当者名";
   let registeredSystems = "システムA,システムB,システムC";
   let selectedSystem = "システムA";
+  let registeredConditions = "単体テスト,結合テスト";
+  let selectedCondition = "単体テスト";
 
   const today = new Date();
-  const initYy = String(today.getFullYear()).slice(-2);
-  const initMm = String(today.getMonth() + 1).padStart(2, "0");
-  const initDd = String(today.getDate()).padStart(2, "0");
 
   let sheetName = "検証（開発）";
-  let subject = `${initYy}${initMm}${initDd}-`;
+  let subject = "";
 
   let folderPath: string | null = null;
   let pairs: EvidencePair[] = [];
   let errors: string[] = [];
   let isExporting = false;
   let showSettings = false;
+  let settingsLoaded = false;
+
+  onMount(() => {
+    const saved = localStorage.getItem("oneshotpress_settings");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.leftToken) leftToken = parsed.leftToken;
+        if (parsed.rightToken) rightToken = parsed.rightToken;
+        if (parsed.extraToken) extraToken = parsed.extraToken;
+        if (parsed.leftHeader) leftHeader = parsed.leftHeader;
+        if (parsed.rightHeader) rightHeader = parsed.rightHeader;
+        if (parsed.extraHeader) extraHeader = parsed.extraHeader;
+        if (parsed.leftColor) leftColor = parsed.leftColor;
+        if (parsed.rightColor) rightColor = parsed.rightColor;
+        if (parsed.extraColor) extraColor = parsed.extraColor;
+        if (parsed.authorName) authorName = parsed.authorName;
+        if (parsed.registeredSystems) registeredSystems = parsed.registeredSystems;
+        if (parsed.selectedSystem) selectedSystem = parsed.selectedSystem;
+        if (parsed.registeredConditions) registeredConditions = parsed.registeredConditions;
+        if (parsed.selectedCondition) selectedCondition = parsed.selectedCondition;
+        if (parsed.sheetName) sheetName = parsed.sheetName;
+      } catch (e) {
+        console.error("Failed to parse settings", e);
+      }
+    }
+    settingsLoaded = true;
+  });
+
+  $: if (settingsLoaded) {
+    const settings = {
+      leftToken,
+      rightToken,
+      extraToken,
+      leftHeader,
+      rightHeader,
+      extraHeader,
+      leftColor,
+      rightColor,
+      extraColor,
+      authorName,
+      registeredSystems,
+      selectedSystem,
+      registeredConditions,
+      selectedCondition,
+      sheetName
+    };
+    localStorage.setItem("oneshotpress_settings", JSON.stringify(settings));
+  }
 
   async function handleSelectFolder() {
     try {
@@ -128,14 +177,10 @@
       const mm = String(today.getMonth() + 1).padStart(2, "0");
       const dd = String(today.getDate()).padStart(2, "0");
 
-      // Default rule: 日付-【氏名】システム名-主題.xlsx
-      // Parse out the date prefix if user kept the default `YYMMDD-` format in subject
-      let cleanSubject = subject;
-      if (subject.startsWith(`${yy}${mm}${dd}-`)) {
-        cleanSubject = subject.slice(7);
-      }
+      // Default rule: 日付-【氏名】【動作条件】システム名-主題.xlsx
 
-      const defaultFilename = `${yy}${mm}${dd}-【${authorName}】${selectedSystem}-${cleanSubject}.xlsx`;
+      const subjectSuffix = subject.trim().length > 0 ? `-${subject.trim()}` : "";
+      const defaultFilename = `${yy}${mm}${dd}-【${authorName}】【${selectedCondition}】${selectedSystem}${subjectSuffix}.xlsx`;
 
       const savePath = await save({
         filters: [{ name: "Excel", extensions: ["xlsx"] }],
@@ -193,27 +238,32 @@
         bind:authorName
         bind:registeredSystems
         bind:selectedSystem
+        bind:registeredConditions
+        bind:selectedCondition
       onTokenBlur={handleTokenBlur}
     />
   </div>
 
   <div class="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded shadow-sm border border-slate-200 dark:border-slate-800">
-    <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="sheetNameTop">シート名:</label>
-    <input
-      id="sheetNameTop"
-      type="text"
-      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
-      bind:value={sheetName}
-    />
-    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
     <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="systemTop">システム:</label>
     <select
       id="systemTop"
-      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
       bind:value={selectedSystem}
     >
       {#each registeredSystems.split(',').map(s => s.trim()).filter(s => s) as sys}
         <option value={sys}>{sys}</option>
+      {/each}
+    </select>
+    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+    <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="conditionTop">動作条件:</label>
+    <select
+      id="conditionTop"
+      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
+      bind:value={selectedCondition}
+    >
+      {#each registeredConditions.split(',').map(s => s.trim()).filter(s => s) as cond}
+        <option value={cond}>{cond}</option>
       {/each}
     </select>
     <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
@@ -223,6 +273,14 @@
       type="text"
       class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-48"
       bind:value={subject}
+    />
+    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+    <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="sheetNameTop">シート名:</label>
+    <input
+      id="sheetNameTop"
+      type="text"
+      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
+      bind:value={sheetName}
     />
     <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1 flex-shrink-0"></div>
     <button

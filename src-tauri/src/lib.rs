@@ -215,32 +215,21 @@ fn generate_excel(
         .set_bold()
         .set_align(FormatAlign::Left)
         .set_align(FormatAlign::VerticalCenter);
-    worksheet.write_string(0, 0, &subject).map_err(|e| e.to_string())?;
-    worksheet.set_cell_format(0, 0, &subject_format).map_err(|e| e.to_string())?;
+    worksheet.write_string_with_format(0, 0, &subject, &subject_format).map_err(|e| e.to_string())?;
 
     // Add current date to the top right
     let current_date = Local::now().format("%Y/%m/%d").to_string();
     let date_format = Format::new()
         .set_align(FormatAlign::Right)
         .set_align(FormatAlign::VerticalCenter);
-    worksheet.write_string(0, 4, &current_date).map_err(|e| e.to_string())?;
-    worksheet.set_cell_format(0, 4, &date_format).map_err(|e| e.to_string())?;
+    worksheet.write_string_with_format(0, 4, &current_date, &date_format).map_err(|e| e.to_string())?;
 
     // Headers
-    worksheet.write_string(1, 0, "No").map_err(|e| e.to_string())?;
-    worksheet.set_cell_format(1, 0, &header_format).map_err(|e| e.to_string())?;
-
-    worksheet.write_string(1, 1, "項目").map_err(|e| e.to_string())?;
-    worksheet.set_cell_format(1, 1, &header_format).map_err(|e| e.to_string())?;
-
-    worksheet.write_string(1, 2, &left_header).map_err(|e| e.to_string())?;
-    worksheet.set_cell_format(1, 2, &left_header_format).map_err(|e| e.to_string())?;
-
-    worksheet.write_string(1, 3, &right_header).map_err(|e| e.to_string())?;
-    worksheet.set_cell_format(1, 3, &right_header_format).map_err(|e| e.to_string())?;
-
-    worksheet.write_string(1, 4, &extra_header).map_err(|e| e.to_string())?;
-    worksheet.set_cell_format(1, 4, &extra_header_format).map_err(|e| e.to_string())?;
+    worksheet.write_string_with_format(1, 0, "No", &header_format).map_err(|e| e.to_string())?;
+    worksheet.write_string_with_format(1, 1, "項目", &header_format).map_err(|e| e.to_string())?;
+    worksheet.write_string_with_format(1, 2, &left_header, &left_header_format).map_err(|e| e.to_string())?;
+    worksheet.write_string_with_format(1, 3, &right_header, &right_header_format).map_err(|e| e.to_string())?;
+    worksheet.write_string_with_format(1, 4, &extra_header, &extra_header_format).map_err(|e| e.to_string())?;
 
     let cell_format = Format::new()
         .set_border(FormatBorder::Thin)
@@ -260,20 +249,11 @@ fn generate_excel(
         worksheet.set_row_height(row, 252.0).map_err(|e| e.to_string())?;
 
         // Data cells
-        worksheet.write_string(row, 0, &no.to_string()).map_err(|e| e.to_string())?;
-        worksheet.set_cell_format(row, 0, &cell_format).map_err(|e| e.to_string())?;
-
-        worksheet.write_string(row, 1, &pair.key).map_err(|e| e.to_string())?;
-        worksheet.set_cell_format(row, 1, &cell_format).map_err(|e| e.to_string())?;
-
-        worksheet.write_string(row, 2, "").map_err(|e| e.to_string())?;
-        worksheet.set_cell_format(row, 2, &empty_cell_format).map_err(|e| e.to_string())?;
-
-        worksheet.write_string(row, 3, "").map_err(|e| e.to_string())?;
-        worksheet.set_cell_format(row, 3, &empty_cell_format).map_err(|e| e.to_string())?;
-
-        worksheet.write_string(row, 4, "").map_err(|e| e.to_string())?;
-        worksheet.set_cell_format(row, 4, &empty_cell_format).map_err(|e| e.to_string())?;
+        worksheet.write_string_with_format(row, 0, &no.to_string(), &cell_format).map_err(|e| e.to_string())?;
+        worksheet.write_string_with_format(row, 1, &pair.key, &cell_format).map_err(|e| e.to_string())?;
+        worksheet.write_string_with_format(row, 2, "", &empty_cell_format).map_err(|e| e.to_string())?;
+        worksheet.write_string_with_format(row, 3, "", &empty_cell_format).map_err(|e| e.to_string())?;
+        worksheet.write_string_with_format(row, 4, "", &empty_cell_format).map_err(|e| e.to_string())?;
 
         // Images layout
         let max_w = 315.0; // Standard viewable max width
@@ -289,7 +269,7 @@ fn generate_excel(
                 let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
                 image = image.set_scale_width(scale).set_scale_height(scale);
             }
-            worksheet.insert_image_with_offset(row, 2, &image, 2, 2).map_err(|e| e.to_string())?;
+            worksheet.insert_image(row, 2, &image).map_err(|e| e.to_string())?;
         }
 
         if let Some(ref right_path) = pair.right_image {
@@ -302,7 +282,7 @@ fn generate_excel(
                 let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
                 image = image.set_scale_width(scale).set_scale_height(scale);
             }
-            worksheet.insert_image_with_offset(row, 3, &image, 2, 2).map_err(|e| e.to_string())?;
+            worksheet.insert_image(row, 3, &image).map_err(|e| e.to_string())?;
         }
 
         if let Some(ref extra_path) = pair.extra_image {
@@ -315,7 +295,7 @@ fn generate_excel(
                 let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
                 image = image.set_scale_width(scale).set_scale_height(scale);
             }
-            worksheet.insert_image_with_offset(row, 4, &image, 2, 2).map_err(|e| e.to_string())?;
+            worksheet.insert_image(row, 4, &image).map_err(|e| e.to_string())?;
         }
 
         row += 2; // Leave a blank row as a gap between entries
