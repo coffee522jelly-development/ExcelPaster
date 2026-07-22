@@ -245,33 +245,25 @@
   </div>
 
   <div class="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded shadow-sm border border-slate-200 dark:border-slate-800">
-    <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="sheetNameTop">シート名:</label>
-    <input
-      id="sheetNameTop"
-      type="text"
-      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
-      bind:value={sheetName}
-    />
-      <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
-      <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="conditionTop">動作条件:</label>
-      <select
-        id="conditionTop"
-        class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
-        bind:value={selectedCondition}
-      >
-        {#each registeredConditions.split(',').map(s => s.trim()).filter(s => s) as cond}
-          <option value={cond}>{cond}</option>
-        {/each}
-      </select>
-    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
     <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="systemTop">システム:</label>
     <select
       id="systemTop"
-        class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
+      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
       bind:value={selectedSystem}
     >
       {#each registeredSystems.split(',').map(s => s.trim()).filter(s => s) as sys}
         <option value={sys}>{sys}</option>
+      {/each}
+    </select>
+    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+    <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="conditionTop">動作条件:</label>
+    <select
+      id="conditionTop"
+      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
+      bind:value={selectedCondition}
+    >
+      {#each registeredConditions.split(',').map(s => s.trim()).filter(s => s) as cond}
+        <option value={cond}>{cond}</option>
       {/each}
     </select>
     <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
@@ -281,6 +273,14 @@
       type="text"
       class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-48"
       bind:value={subject}
+    />
+    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+    <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="sheetNameTop">シート名:</label>
+    <input
+      id="sheetNameTop"
+      type="text"
+      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
+      bind:value={sheetName}
     />
     <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1 flex-shrink-0"></div>
     <button
