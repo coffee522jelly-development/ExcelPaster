@@ -15,6 +15,8 @@
   export let authorName: string;
   export let registeredSystems: string;
   export let selectedSystem: string;
+  export let registeredConditions: string;
+  export let selectedCondition: string;
   export let onTokenBlur: () => void;
 </script>
 
@@ -73,6 +75,34 @@
             class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
             bind:value={registeredSystems}
             placeholder="システムA,システムB"
+          />
+        </div>
+
+        <div class="col-span-3 w-full h-px bg-slate-200 dark:bg-slate-700 my-2"></div>
+
+        <!-- デフォルト動作条件 (1列) -->
+        <div class="flex flex-col gap-1 col-span-1">
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="selectedConditionSettings">デフォルト動作条件</label>
+          <select
+            id="selectedConditionSettings"
+            class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-full"
+            bind:value={selectedCondition}
+          >
+            {#each registeredConditions.split(',').map(s => s.trim()).filter(s => s) as cond}
+              <option value={cond}>{cond}</option>
+            {/each}
+          </select>
+        </div>
+
+        <!-- 登録動作条件 (2列) -->
+        <div class="flex flex-col gap-1 col-span-2">
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="registeredConditions">登録動作条件 (カンマ区切り)</label>
+          <input
+            id="registeredConditions"
+            type="text"
+            class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+            bind:value={registeredConditions}
+            placeholder="単体テスト,結合テスト"
           />
         </div>
 

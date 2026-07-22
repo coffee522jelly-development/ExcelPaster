@@ -36,6 +36,8 @@
   let authorName = "担当者名";
   let registeredSystems = "システムA,システムB,システムC";
   let selectedSystem = "システムA";
+  let registeredConditions = "単体テスト,結合テスト";
+  let selectedCondition = "単体テスト";
 
   const today = new Date();
 
@@ -66,6 +68,8 @@
         if (parsed.authorName) authorName = parsed.authorName;
         if (parsed.registeredSystems) registeredSystems = parsed.registeredSystems;
         if (parsed.selectedSystem) selectedSystem = parsed.selectedSystem;
+        if (parsed.registeredConditions) registeredConditions = parsed.registeredConditions;
+        if (parsed.selectedCondition) selectedCondition = parsed.selectedCondition;
         if (parsed.sheetName) sheetName = parsed.sheetName;
       } catch (e) {
         console.error("Failed to parse settings", e);
@@ -88,6 +92,8 @@
       authorName,
       registeredSystems,
       selectedSystem,
+      registeredConditions,
+      selectedCondition,
       sheetName
     };
     localStorage.setItem("oneshotpress_settings", JSON.stringify(settings));
@@ -171,10 +177,10 @@
       const mm = String(today.getMonth() + 1).padStart(2, "0");
       const dd = String(today.getDate()).padStart(2, "0");
 
-      // Default rule: 日付-【氏名】システム名-主題.xlsx
+      // Default rule: 日付-【氏名】【動作条件】システム名-主題.xlsx
 
       const subjectSuffix = subject.trim().length > 0 ? `-${subject.trim()}` : "";
-      const defaultFilename = `${yy}${mm}${dd}-【${authorName}】${selectedSystem}${subjectSuffix}.xlsx`;
+      const defaultFilename = `${yy}${mm}${dd}-【${authorName}】【${selectedCondition}】${selectedSystem}${subjectSuffix}.xlsx`;
 
       const savePath = await save({
         filters: [{ name: "Excel", extensions: ["xlsx"] }],
@@ -232,6 +238,8 @@
         bind:authorName
         bind:registeredSystems
         bind:selectedSystem
+        bind:registeredConditions
+        bind:selectedCondition
       onTokenBlur={handleTokenBlur}
     />
   </div>
@@ -244,11 +252,22 @@
       class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
       bind:value={sheetName}
     />
+      <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+      <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="conditionTop">動作条件:</label>
+      <select
+        id="conditionTop"
+        class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
+        bind:value={selectedCondition}
+      >
+        {#each registeredConditions.split(',').map(s => s.trim()).filter(s => s) as cond}
+          <option value={cond}>{cond}</option>
+        {/each}
+      </select>
     <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
     <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="systemTop">システム:</label>
     <select
       id="systemTop"
-      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+        class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
       bind:value={selectedSystem}
     >
       {#each registeredSystems.split(',').map(s => s.trim()).filter(s => s) as sys}
