@@ -7,6 +7,7 @@
   import ImagePreview from "./lib/ImagePreview.svelte";
   import SettingsPanel from "./lib/SettingsPanel.svelte";
   import ThemeToggle from "./lib/ThemeToggle.svelte";
+  import { onMount } from "svelte";
   import "./app.css";
 
   interface EvidencePair {
@@ -37,18 +38,60 @@
   let selectedSystem = "システムA";
 
   const today = new Date();
-  const initYy = String(today.getFullYear()).slice(-2);
-  const initMm = String(today.getMonth() + 1).padStart(2, "0");
-  const initDd = String(today.getDate()).padStart(2, "0");
 
   let sheetName = "検証（開発）";
-  let subject = `${initYy}${initMm}${initDd}-`;
+  let subject = "";
 
   let folderPath: string | null = null;
   let pairs: EvidencePair[] = [];
   let errors: string[] = [];
   let isExporting = false;
   let showSettings = false;
+  let settingsLoaded = false;
+
+  onMount(() => {
+    const saved = localStorage.getItem("oneshotpress_settings");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.leftToken) leftToken = parsed.leftToken;
+        if (parsed.rightToken) rightToken = parsed.rightToken;
+        if (parsed.extraToken) extraToken = parsed.extraToken;
+        if (parsed.leftHeader) leftHeader = parsed.leftHeader;
+        if (parsed.rightHeader) rightHeader = parsed.rightHeader;
+        if (parsed.extraHeader) extraHeader = parsed.extraHeader;
+        if (parsed.leftColor) leftColor = parsed.leftColor;
+        if (parsed.rightColor) rightColor = parsed.rightColor;
+        if (parsed.extraColor) extraColor = parsed.extraColor;
+        if (parsed.authorName) authorName = parsed.authorName;
+        if (parsed.registeredSystems) registeredSystems = parsed.registeredSystems;
+        if (parsed.selectedSystem) selectedSystem = parsed.selectedSystem;
+        if (parsed.sheetName) sheetName = parsed.sheetName;
+      } catch (e) {
+        console.error("Failed to parse settings", e);
+      }
+    }
+    settingsLoaded = true;
+  });
+
+  $: if (settingsLoaded) {
+    const settings = {
+      leftToken,
+      rightToken,
+      extraToken,
+      leftHeader,
+      rightHeader,
+      extraHeader,
+      leftColor,
+      rightColor,
+      extraColor,
+      authorName,
+      registeredSystems,
+      selectedSystem,
+      sheetName
+    };
+    localStorage.setItem("oneshotpress_settings", JSON.stringify(settings));
+  }
 
   async function handleSelectFolder() {
     try {
@@ -129,13 +172,9 @@
       const dd = String(today.getDate()).padStart(2, "0");
 
       // Default rule: 日付-【氏名】システム名-主題.xlsx
-      // Parse out the date prefix if user kept the default `YYMMDD-` format in subject
-      let cleanSubject = subject;
-      if (subject.startsWith(`${yy}${mm}${dd}-`)) {
-        cleanSubject = subject.slice(7);
-      }
 
-      const defaultFilename = `${yy}${mm}${dd}-【${authorName}】${selectedSystem}-${cleanSubject}.xlsx`;
+      const subjectSuffix = subject.trim().length > 0 ? `-${subject.trim()}` : "";
+      const defaultFilename = `${yy}${mm}${dd}-【${authorName}】${selectedSystem}${subjectSuffix}.xlsx`;
 
       const savePath = await save({
         filters: [{ name: "Excel", extensions: ["xlsx"] }],

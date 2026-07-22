@@ -27,9 +27,9 @@
   <Dialog.Portal>
     <Dialog.Overlay class="fixed inset-0 bg-black/50 z-50 transition-opacity" />
     <Dialog.Content
-      class="fixed right-0 top-0 h-full w-[300px] max-w-full bg-white dark:bg-slate-900 p-4 shadow-xl z-50 flex flex-col gap-4 transform transition-transform duration-300 ease-in-out border-l border-slate-200 dark:border-slate-800"
+      class="fixed right-0 top-0 h-full w-[500px] max-w-full bg-white dark:bg-slate-900 p-4 shadow-xl z-50 flex flex-col gap-4 transform transition-transform duration-300 ease-in-out border-l border-slate-200 dark:border-slate-800 overflow-y-auto"
     >
-      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2 mb-2">
         <Dialog.Title class="text-base font-bold text-slate-800 dark:text-slate-100">設定</Dialog.Title>
         <Dialog.Close
           class="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
@@ -38,8 +38,9 @@
         </Dialog.Close>
       </div>
 
-      <div class="flex flex-col gap-3">
-        <div class="flex flex-col gap-1">
+      <div class="grid grid-cols-3 gap-x-4 gap-y-3">
+        <!-- 氏名 (1列) -->
+        <div class="flex flex-col gap-1 col-span-1">
           <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="authorName">氏名</label>
           <input
             id="authorName"
@@ -48,7 +49,23 @@
             bind:value={authorName}
           />
         </div>
-        <div class="flex flex-col gap-1">
+
+        <!-- デフォルトシステム (2列) -->
+        <div class="flex flex-col gap-1 col-span-2">
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="selectedSystemSettings">デフォルトシステム</label>
+          <select
+            id="selectedSystemSettings"
+            class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-full"
+            bind:value={selectedSystem}
+          >
+            {#each registeredSystems.split(',').map(s => s.trim()).filter(s => s) as sys}
+              <option value={sys}>{sys}</option>
+            {/each}
+          </select>
+        </div>
+
+        <!-- 登録システム名 (3列ぶち抜き) -->
+        <div class="flex flex-col gap-1 col-span-3">
           <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="registeredSystems">登録システム名 (カンマ区切り)</label>
           <input
             id="registeredSystems"
@@ -58,21 +75,17 @@
             placeholder="システムA,システムB"
           />
         </div>
+
+        <div class="col-span-3 w-full h-px bg-slate-200 dark:bg-slate-700 my-2"></div>
+
+        <!-- ヘッダー行 -->
+        <div class="font-semibold text-xs text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 pb-1">左側設定</div>
+        <div class="font-semibold text-xs text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 pb-1">右側設定</div>
+        <div class="font-semibold text-xs text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 pb-1">補足設定</div>
+
+        <!-- 識別子 (各列) -->
         <div class="flex flex-col gap-1">
-          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="selectedSystemSettings">デフォルトシステム</label>
-          <select
-            id="selectedSystemSettings"
-            class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
-            bind:value={selectedSystem}
-          >
-            {#each registeredSystems.split(',').map(s => s.trim()).filter(s => s) as sys}
-              <option value={sys}>{sys}</option>
-            {/each}
-          </select>
-        </div>
-        <div class="w-full h-px bg-slate-200 dark:bg-slate-700 my-1"></div>
-        <div class="flex flex-col gap-1">
-          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="leftToken">左画像識別子</label>
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="leftToken">画像識別子</label>
           <input
             id="leftToken"
             type="text"
@@ -82,7 +95,7 @@
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="rightToken">右画像識別子</label>
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="rightToken">画像識別子</label>
           <input
             id="rightToken"
             type="text"
@@ -92,7 +105,7 @@
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="extraToken">補足画像識別子</label>
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="extraToken">画像識別子</label>
           <input
             id="extraToken"
             type="text"
@@ -101,8 +114,10 @@
             on:blur={onTokenBlur}
           />
         </div>
+
+        <!-- ヘッダー文言 (各列) -->
         <div class="flex flex-col gap-1">
-          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="leftHeader">左画像エクセル文言</label>
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="leftHeader">エクセル文言</label>
           <input
             id="leftHeader"
             type="text"
@@ -111,7 +126,7 @@
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="rightHeader">右画像エクセル文言</label>
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="rightHeader">エクセル文言</label>
           <input
             id="rightHeader"
             type="text"
@@ -120,7 +135,7 @@
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="extraHeader">補足画像エクセル文言</label>
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="extraHeader">エクセル文言</label>
           <input
             id="extraHeader"
             type="text"
@@ -128,8 +143,10 @@
             bind:value={extraHeader}
           />
         </div>
+
+        <!-- 背景色 (各列) -->
         <div class="flex flex-col gap-1">
-          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="leftColor">左側セル背景色</label>
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="leftColor">セル背景色</label>
           <input
             id="leftColor"
             type="color"
@@ -138,7 +155,7 @@
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="rightColor">右側セル背景色</label>
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="rightColor">セル背景色</label>
           <input
             id="rightColor"
             type="color"
@@ -147,7 +164,7 @@
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="extraColor">補足セル背景色</label>
+          <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="extraColor">セル背景色</label>
           <input
             id="extraColor"
             type="color"
