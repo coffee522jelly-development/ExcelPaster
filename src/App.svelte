@@ -245,7 +245,7 @@
   </div>
 
   <div class="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded shadow-sm border border-slate-200 dark:border-slate-800">
-    <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="systemTop">システム:</label>
+    <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="systemTop">システム名:</label>
     <select
       id="systemTop"
       class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
@@ -381,6 +381,12 @@
         on:click={() => handleBatchRename(rightToken)}
       >
         右側識別子
+      </button>
+      <button
+        class="px-2 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded transition-colors whitespace-nowrap flex-shrink-0"
+        on:click={() => handleBatchRename(extraToken)}
+      >
+        補足識別子
       </button>
     </div>
     <button
