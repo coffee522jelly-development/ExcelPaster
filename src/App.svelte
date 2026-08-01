@@ -32,6 +32,7 @@
   let leftColor = "#fed7aa"; // Default light orange
   let rightColor = "#bbf7d0"; // Default light green
   let extraColor = "#fef08a"; // Default light yellow
+  let subjectColor = "#FFFF00";
 
   let authorName = "担当者名";
   let registeredSystems = "システムA,システムB,システムC";
@@ -66,6 +67,7 @@
         if (parsed.leftColor) leftColor = parsed.leftColor;
         if (parsed.rightColor) rightColor = parsed.rightColor;
         if (parsed.extraColor) extraColor = parsed.extraColor;
+        if (parsed.subjectColor) subjectColor = parsed.subjectColor;
         if (parsed.authorName) authorName = parsed.authorName;
         if (parsed.registeredSystems) registeredSystems = parsed.registeredSystems;
         if (parsed.selectedSystem) selectedSystem = parsed.selectedSystem;
@@ -90,6 +92,7 @@
       leftColor,
       rightColor,
       extraColor,
+      subjectColor,
       authorName,
       registeredSystems,
       selectedSystem,
@@ -199,6 +202,7 @@
           leftColor,
           rightColor,
           extraColor,
+          subjectColor,
           sheetName,
           subject,
           skipImages,
@@ -237,6 +241,7 @@
       bind:leftColor
       bind:rightColor
       bind:extraColor
+      bind:subjectColor
         bind:authorName
         bind:registeredSystems
         bind:selectedSystem

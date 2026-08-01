@@ -166,6 +166,7 @@ fn generate_excel(
     left_color: String,
     right_color: String,
     extra_color: String,
+    subject_color: String,
     sheet_name: String,
     subject: String,
     skip_images: bool
@@ -216,16 +217,24 @@ fn generate_excel(
         .set_bold()
         .set_align(FormatAlign::Left)
         .set_align(FormatAlign::VerticalCenter)
-        .set_background_color("#FFFF00")
+        .set_background_color(subject_color.as_str())
         .set_font_color("#000000")
         .set_font_size(14);
     worksheet.write_string_with_format(0, 0, &subject, &subject_format).map_err(|e| e.to_string())?;
+
+    let subject_blank_format = Format::new()
+        .set_background_color(subject_color.as_str());
+    worksheet.write_string_with_format(0, 1, "", &subject_blank_format).map_err(|e| e.to_string())?;
+    worksheet.write_string_with_format(0, 2, "", &subject_blank_format).map_err(|e| e.to_string())?;
+    worksheet.write_string_with_format(0, 3, "", &subject_blank_format).map_err(|e| e.to_string())?;
 
     // Add current date to the top right
     let current_date = Local::now().format("%Y/%m/%d").to_string();
     let date_format = Format::new()
         .set_align(FormatAlign::Right)
-        .set_align(FormatAlign::VerticalCenter);
+        .set_align(FormatAlign::VerticalCenter)
+        .set_background_color(subject_color.as_str())
+        .set_font_color("#000000");
     worksheet.write_string_with_format(0, 4, &current_date, &date_format).map_err(|e| e.to_string())?;
 
     // Headers
