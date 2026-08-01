@@ -167,7 +167,7 @@
   }
 
   async function handleExportExcel() {
-    if (pairs.length === 0) {
+    if (!skipImages && pairs.length === 0) {
       alert("エクスポートするデータがありません");
       return;
     }
@@ -406,7 +406,7 @@
     <button
       class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition-colors disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed"
       on:click={handleExportExcel}
-      disabled={isExporting || pairs.length === 0}
+      disabled={isExporting || (!skipImages && pairs.length === 0)}
     >
       {isExporting ? "出力中..." : "Excel出力"}
     </button>
