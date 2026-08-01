@@ -50,6 +50,7 @@
   let isExporting = false;
   let showSettings = false;
   let settingsLoaded = false;
+  let skipImages = false;
 
   onMount(() => {
     const saved = localStorage.getItem("oneshotpress_settings");
@@ -200,6 +201,7 @@
           extraColor,
           sheetName,
           subject,
+          skipImages,
         });
         alert("Excelの出力が完了しました");
       }
@@ -282,6 +284,11 @@
       class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
       bind:value={sheetName}
     />
+    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1 flex-shrink-0"></div>
+    <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap flex items-center gap-1 cursor-pointer select-none">
+      <input type="checkbox" bind:checked={skipImages} class="cursor-pointer" />
+      画像選択なし
+    </label>
     <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1 flex-shrink-0"></div>
     <button
       class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition-colors whitespace-nowrap flex-shrink-0"
