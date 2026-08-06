@@ -74,6 +74,8 @@
         if (parsed.registeredConditions) registeredConditions = parsed.registeredConditions;
         if (parsed.selectedCondition) selectedCondition = parsed.selectedCondition;
         if (parsed.sheetName) sheetName = parsed.sheetName;
+        if (parsed.subject !== undefined) subject = parsed.subject;
+        if (parsed.skipImages !== undefined) skipImages = parsed.skipImages;
       } catch (e) {
         console.error("Failed to parse settings", e);
       }
@@ -98,7 +100,9 @@
       selectedSystem,
       registeredConditions,
       selectedCondition,
-      sheetName
+      sheetName,
+      subject,
+      skipImages
     };
     localStorage.setItem("oneshotpress_settings", JSON.stringify(settings));
   }
