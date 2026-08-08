@@ -32,6 +32,7 @@
   let leftColor = "#fed7aa"; // Default light orange
   let rightColor = "#bbf7d0"; // Default light green
   let extraColor = "#fef08a"; // Default light yellow
+  let subjectColor = "#FFFF00";
 
   let authorName = "担当者名";
   let registeredSystems = "システムA,システムB,システムC";
@@ -50,6 +51,7 @@
   let isExporting = false;
   let showSettings = false;
   let settingsLoaded = false;
+  let skipImages = false;
 
   onMount(() => {
     const saved = localStorage.getItem("oneshotpress_settings");
@@ -65,12 +67,15 @@
         if (parsed.leftColor) leftColor = parsed.leftColor;
         if (parsed.rightColor) rightColor = parsed.rightColor;
         if (parsed.extraColor) extraColor = parsed.extraColor;
+        if (parsed.subjectColor) subjectColor = parsed.subjectColor;
         if (parsed.authorName) authorName = parsed.authorName;
         if (parsed.registeredSystems) registeredSystems = parsed.registeredSystems;
         if (parsed.selectedSystem) selectedSystem = parsed.selectedSystem;
         if (parsed.registeredConditions) registeredConditions = parsed.registeredConditions;
         if (parsed.selectedCondition) selectedCondition = parsed.selectedCondition;
         if (parsed.sheetName) sheetName = parsed.sheetName;
+        if (parsed.subject !== undefined) subject = parsed.subject;
+        if (parsed.skipImages !== undefined) skipImages = parsed.skipImages;
       } catch (e) {
         console.error("Failed to parse settings", e);
       }
@@ -89,12 +94,15 @@
       leftColor,
       rightColor,
       extraColor,
+      subjectColor,
       authorName,
       registeredSystems,
       selectedSystem,
       registeredConditions,
       selectedCondition,
-      sheetName
+      sheetName,
+      subject,
+      skipImages
     };
     localStorage.setItem("oneshotpress_settings", JSON.stringify(settings));
   }
@@ -166,7 +174,7 @@
   }
 
   async function handleExportExcel() {
-    if (pairs.length === 0) {
+    if (!skipImages && pairs.length === 0) {
       alert("エクスポートするデータがありません");
       return;
     }
@@ -198,8 +206,10 @@
           leftColor,
           rightColor,
           extraColor,
+          subjectColor,
           sheetName,
           subject,
+          skipImages,
         });
         alert("Excelの出力が完了しました");
       }
@@ -235,6 +245,7 @@
       bind:leftColor
       bind:rightColor
       bind:extraColor
+      bind:subjectColor
         bind:authorName
         bind:registeredSystems
         bind:selectedSystem
@@ -244,51 +255,63 @@
     />
   </div>
 
-  <div class="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded shadow-sm border border-slate-200 dark:border-slate-800">
-    <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="systemTop">システム:</label>
-    <select
-      id="systemTop"
-      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
-      bind:value={selectedSystem}
-    >
-      {#each registeredSystems.split(',').map(s => s.trim()).filter(s => s) as sys}
-        <option value={sys}>{sys}</option>
-      {/each}
-    </select>
-    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
-    <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="conditionTop">動作条件:</label>
-    <select
-      id="conditionTop"
-      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
-      bind:value={selectedCondition}
-    >
-      {#each registeredConditions.split(',').map(s => s.trim()).filter(s => s) as cond}
-        <option value={cond}>{cond}</option>
-      {/each}
-    </select>
-    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
-    <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="subjectTop">主題:</label>
-    <input
-      id="subjectTop"
-      type="text"
-      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-48"
-      bind:value={subject}
-    />
-    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
-    <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="sheetNameTop">シート名:</label>
-    <input
-      id="sheetNameTop"
-      type="text"
-      class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
-      bind:value={sheetName}
-    />
-    <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1 flex-shrink-0"></div>
-    <button
-      class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition-colors whitespace-nowrap flex-shrink-0"
-      on:click={handleSelectFolder}
-    >
-      フォルダ選択
-    </button>
+  <div class="flex flex-col gap-2 bg-white dark:bg-slate-900 p-2 rounded shadow-sm border border-slate-200 dark:border-slate-800">
+    <div class="flex items-center gap-2">
+      <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="systemTop">システム名:</label>
+      <select
+        id="systemTop"
+        class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
+        bind:value={selectedSystem}
+      >
+        {#each registeredSystems.split(',').map(s => s.trim()).filter(s => s) as sys}
+          <option value={sys}>{sys}</option>
+        {/each}
+      </select>
+      <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+      <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="conditionTop">動作条件:</label>
+      <select
+        id="conditionTop"
+        class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
+        bind:value={selectedCondition}
+      >
+        {#each registeredConditions.split(',').map(s => s.trim()).filter(s => s) as cond}
+          <option value={cond}>{cond}</option>
+        {/each}
+      </select>
+      <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+      <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="subjectTop">主題:</label>
+      <input
+        id="subjectTop"
+        type="text"
+        class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-48"
+        bind:value={subject}
+      />
+    </div>
+
+    <div class="w-full h-px bg-slate-200 dark:bg-slate-700"></div>
+
+    <div class="flex items-center gap-2">
+      <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap" for="sheetNameTop">シート名:</label>
+      <input
+        id="sheetNameTop"
+        type="text"
+        class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded px-2 py-1 text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none w-24"
+        bind:value={sheetName}
+      />
+      <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1 flex-shrink-0"></div>
+      <label class="font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap flex items-center gap-1 cursor-pointer select-none">
+        <input type="checkbox" bind:checked={skipImages} class="cursor-pointer" />
+        画像選択なし
+      </label>
+      <div class="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1 flex-shrink-0"></div>
+      <button
+        class="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition-colors whitespace-nowrap flex-shrink-0 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed"
+        on:click={handleSelectFolder}
+        disabled={skipImages}
+      >
+        画像一括選択
+      </button>
+    </div>
   </div>
 
   {#if folderPath}
@@ -382,11 +405,17 @@
       >
         右側識別子
       </button>
+      <button
+        class="px-2 py-1 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded transition-colors whitespace-nowrap flex-shrink-0"
+        on:click={() => handleBatchRename(extraToken)}
+      >
+        補足識別子
+      </button>
     </div>
     <button
       class="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition-colors disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:text-slate-500 dark:disabled:text-slate-500 disabled:cursor-not-allowed"
       on:click={handleExportExcel}
-      disabled={isExporting || pairs.length === 0}
+      disabled={isExporting || (!skipImages && pairs.length === 0)}
     >
       {isExporting ? "出力中..." : "Excel出力"}
     </button>

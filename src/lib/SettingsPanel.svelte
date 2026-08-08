@@ -12,6 +12,7 @@
   export let leftColor: string;
   export let rightColor: string;
   export let extraColor: string;
+  export let subjectColor: string;
   export let authorName: string;
   export let registeredSystems: string;
   export let selectedSystem: string;
@@ -41,8 +42,8 @@
       </div>
 
       <div class="grid grid-cols-3 gap-x-4 gap-y-3">
-        <!-- 氏名 (1列) -->
-        <div class="flex flex-col gap-1 col-span-1">
+        <!-- 氏名 (3列ぶち抜き) -->
+        <div class="flex flex-col gap-1 col-span-3">
           <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="authorName">氏名</label>
           <input
             id="authorName"
@@ -52,8 +53,10 @@
           />
         </div>
 
-        <!-- デフォルトシステム (2列) -->
-        <div class="flex flex-col gap-1 col-span-2">
+        <div class="col-span-3 w-full h-px bg-slate-200 dark:bg-slate-700 my-1"></div>
+
+        <!-- デフォルトシステム (1列) -->
+        <div class="flex flex-col gap-1 col-span-1">
           <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="selectedSystemSettings">デフォルトシステム</label>
           <select
             id="selectedSystemSettings"
@@ -66,8 +69,8 @@
           </select>
         </div>
 
-        <!-- 登録システム名 (3列ぶち抜き) -->
-        <div class="flex flex-col gap-1 col-span-3">
+        <!-- 登録システム名 (2列) -->
+        <div class="flex flex-col gap-1 col-span-2">
           <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="registeredSystems">登録システム名 (カンマ区切り)</label>
           <input
             id="registeredSystems"
@@ -78,7 +81,7 @@
           />
         </div>
 
-        <div class="col-span-3 w-full h-px bg-slate-200 dark:bg-slate-700 my-2"></div>
+        <div class="col-span-3 w-full h-px bg-slate-200 dark:bg-slate-700 my-1"></div>
 
         <!-- デフォルト動作条件 (1列) -->
         <div class="flex flex-col gap-1 col-span-1">
@@ -202,6 +205,16 @@
             bind:value={extraColor}
           />
         </div>
+      </div>
+      <div class="col-span-3 w-full h-px bg-slate-200 dark:bg-slate-700 my-1"></div>
+      <div class="flex flex-col gap-1 col-span-3">
+        <label class="font-semibold text-xs text-slate-700 dark:text-slate-300" for="subjectColor">主題・ヘッダー背景色 (A1~E1)</label>
+        <input
+          id="subjectColor"
+          type="color"
+          class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 rounded h-8 w-full cursor-pointer focus:ring-1 focus:ring-blue-500 focus:outline-none"
+          bind:value={subjectColor}
+        />
       </div>
 
     </Dialog.Content>

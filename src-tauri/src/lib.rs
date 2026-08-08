@@ -166,8 +166,10 @@ fn generate_excel(
     left_color: String,
     right_color: String,
     extra_color: String,
+    subject_color: String,
     sheet_name: String,
-    subject: String
+    subject: String,
+    skip_images: bool
 ) -> Result<(), String> {
     let mut workbook = Workbook::new();
     let worksheet = workbook.add_worksheet();
@@ -214,14 +216,25 @@ fn generate_excel(
     let subject_format = Format::new()
         .set_bold()
         .set_align(FormatAlign::Left)
-        .set_align(FormatAlign::VerticalCenter);
+        .set_align(FormatAlign::VerticalCenter)
+        .set_background_color(subject_color.as_str())
+        .set_font_color("#000000")
+        .set_font_size(14);
     worksheet.write_string_with_format(0, 0, &subject, &subject_format).map_err(|e| e.to_string())?;
+
+    let subject_blank_format = Format::new()
+        .set_background_color(subject_color.as_str());
+    worksheet.write_string_with_format(0, 1, "", &subject_blank_format).map_err(|e| e.to_string())?;
+    worksheet.write_string_with_format(0, 2, "", &subject_blank_format).map_err(|e| e.to_string())?;
+    worksheet.write_string_with_format(0, 3, "", &subject_blank_format).map_err(|e| e.to_string())?;
 
     // Add current date to the top right
     let current_date = Local::now().format("%Y/%m/%d").to_string();
     let date_format = Format::new()
         .set_align(FormatAlign::Right)
-        .set_align(FormatAlign::VerticalCenter);
+        .set_align(FormatAlign::VerticalCenter)
+        .set_background_color(subject_color.as_str())
+        .set_font_color("#000000");
     worksheet.write_string_with_format(0, 4, &current_date, &date_format).map_err(|e| e.to_string())?;
 
     // Headers
@@ -259,43 +272,45 @@ fn generate_excel(
         let max_w = 315.0; // Standard viewable max width
         let max_h = 260.0; // Standard viewable max height
 
-        if let Some(ref left_path) = pair.left_image {
-            let mut image = Image::new(left_path).map_err(|e| e.to_string())?;
-            let w = image.width() as f64;
-            let h = image.height() as f64;
-            if w > 0.0 && h > 0.0 {
-                let scale_w = max_w / w;
-                let scale_h = max_h / h;
-                let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
-                image = image.set_scale_width(scale).set_scale_height(scale);
+        if !skip_images {
+            if let Some(ref left_path) = pair.left_image {
+                let mut image = Image::new(left_path).map_err(|e| e.to_string())?;
+                let w = image.width() as f64;
+                let h = image.height() as f64;
+                if w > 0.0 && h > 0.0 {
+                    let scale_w = max_w / w;
+                    let scale_h = max_h / h;
+                    let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
+                    image = image.set_scale_width(scale).set_scale_height(scale);
+                }
+                worksheet.insert_image(row, 2, &image).map_err(|e| e.to_string())?;
             }
-            worksheet.insert_image(row, 2, &image).map_err(|e| e.to_string())?;
-        }
 
-        if let Some(ref right_path) = pair.right_image {
-            let mut image = Image::new(right_path).map_err(|e| e.to_string())?;
-            let w = image.width() as f64;
-            let h = image.height() as f64;
-            if w > 0.0 && h > 0.0 {
-                let scale_w = max_w / w;
-                let scale_h = max_h / h;
-                let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
-                image = image.set_scale_width(scale).set_scale_height(scale);
+            if let Some(ref right_path) = pair.right_image {
+                let mut image = Image::new(right_path).map_err(|e| e.to_string())?;
+                let w = image.width() as f64;
+                let h = image.height() as f64;
+                if w > 0.0 && h > 0.0 {
+                    let scale_w = max_w / w;
+                    let scale_h = max_h / h;
+                    let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
+                    image = image.set_scale_width(scale).set_scale_height(scale);
+                }
+                worksheet.insert_image(row, 3, &image).map_err(|e| e.to_string())?;
             }
-            worksheet.insert_image(row, 3, &image).map_err(|e| e.to_string())?;
-        }
 
-        if let Some(ref extra_path) = pair.extra_image {
-            let mut image = Image::new(extra_path).map_err(|e| e.to_string())?;
-            let w = image.width() as f64;
-            let h = image.height() as f64;
-            if w > 0.0 && h > 0.0 {
-                let scale_w = max_w / w;
-                let scale_h = max_h / h;
-                let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
-                image = image.set_scale_width(scale).set_scale_height(scale);
+            if let Some(ref extra_path) = pair.extra_image {
+                let mut image = Image::new(extra_path).map_err(|e| e.to_string())?;
+                let w = image.width() as f64;
+                let h = image.height() as f64;
+                if w > 0.0 && h > 0.0 {
+                    let scale_w = max_w / w;
+                    let scale_h = max_h / h;
+                    let scale = f64::min(scale_w, f64::min(scale_h, 1.0));
+                    image = image.set_scale_width(scale).set_scale_height(scale);
+                }
+                worksheet.insert_image(row, 4, &image).map_err(|e| e.to_string())?;
             }
-            worksheet.insert_image(row, 4, &image).map_err(|e| e.to_string())?;
         }
 
         row += 2; // Leave a blank row as a gap between entries
